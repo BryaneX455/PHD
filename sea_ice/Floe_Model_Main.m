@@ -151,26 +151,25 @@ for i = 2:N
     tangential_force_max = min(tangential_force_temp, abs(tangential_force));
     
     tangential_force = ((tangential_force_max == tangential_force_temp) .* tangential_force_temp .* ones(L) + (tangential_force_max == abs(tangential_force)) .* abs(tangential_force) .* ones(L) ).*sign(tangential_force);
-    
     tangential_force_x = Glj .* thickness_min .* transverse_area .* tangential_force .* tangential_direction_x;
     tangential_force_y = Glj .* thickness_min .* transverse_area .* tangential_force .* tangential_direction_y;
     
     % velocity induced by the contact forces
-    save_contact_force_x(:,i-1) = 1./m .* sum(normal_force_x)' + 1./m .* sum(tangential_force_x)';
-    save_contact_force_y(:,i-1) = 1./m .* sum(normal_force_y)' + 1./m .* sum(tangential_force_y)';
-    save_contact_force_x_normal(:,i-1) = 1./m .* sum(normal_force_x)';
-    save_contact_force_y_normal(:,i-1) = 1./m .* sum(normal_force_y)';
-    save_contact_force_x_tangential(:,i-1) = 1./m .* sum(tangential_force_x)';
-    save_contact_force_y_tangential(:,i-1) = 1./m .* sum(tangential_force_y)';
+    %save_contact_force_x(:,i-1) = 1./m .* sum(normal_force_x)' + 1./m .* sum(tangential_force_x)';
+    %save_contact_force_y(:,i-1) = 1./m .* sum(normal_force_y)' + 1./m .* sum(tangential_force_y)';
+    %save_contact_force_x_normal(:,i-1) = 1./m .* sum(normal_force_x)';
+    %save_contact_force_y_normal(:,i-1) = 1./m .* sum(normal_force_y)';
+    %save_contact_force_x_tangential(:,i-1) = 1./m .* sum(tangential_force_x)';
+    %save_contact_force_y_tangential(:,i-1) = 1./m .* sum(tangential_force_y)';
 
-    vc_x(:,i) = vc_x(:,i-1) + save_contact_force_x(:,i-1) * dt;
-    vc_y(:,i) = vc_y(:,i-1) + save_contact_force_y(:,i-1) * dt;
+    vc_x(:,i) = 0;% vc_x(:,i-1) + save_contact_force_x(:,i-1) * dt;
+    vc_y(:,i) = 0;% vc_y(:,i-1) + save_contact_force_y(:,i-1) * dt;
     % rotation
     t_o = beta_l .* ( exp(1i * x_loc * kk) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
 % t_o
 %     pause
 
-    save_rotation_force(:,i-1) = 1./I .* ( sum( (ones(L,1) * radius)' .* (normal_direction_x .* tangential_force_y - normal_direction_y .* tangential_force_x))'  + t_o );
+    save_rotation_force(:,i-1) = 1./I .* (t_o);% ( sum( (ones(L,1) * radius)' .* (normal_direction_x .* tangential_force_y - normal_direction_y .* tangential_force_x))'  + t_o );
     omega(:,i) = omega(:,i-1) + save_rotation_force(:,i-1) * dt;
     % Periodic boundary conditions
     x(:,i) = mod(x(:,i),2*pi);
@@ -194,7 +193,7 @@ v_total_y = vc_y + vo_y;
 
 [xx,yy] = meshgrid(linspace(0,2*pi,Dim_Grid), linspace(0,2*pi,Dim_Grid));
 x_vec = [reshape(xx,[],1), reshape(yy,[],1)]; 
-figure
+figure(3) 
 for i = 1:100
 %     clf
     plot(0,0)
@@ -205,6 +204,7 @@ for i = 1:100
         yunit = radius(l) * sin(th) + y(l,1+100*(i-1));
         hh = plot(xunit, yunit,'color',[.2*radius(l),0.5,0.5]);
         text(x(l,1+100*(i-1)),y(l,1+100*(i-1)),num2str(omega(l,1+100*(i-1))));
+%         text(x(l,1+100*(i-1)),y(l,1+100*(i-1)),num2str(thickness(l)));
     end
     xlim([0, 2*pi ])
     ylim([0, 2*pi ])
