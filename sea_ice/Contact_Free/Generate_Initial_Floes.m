@@ -1,4 +1,4 @@
-clear all; clc;
+clear all; clc; close all;
 % Generate the initial floes, including the locations and radii
 rng(100)
 L = 36;36;24;48;2; % total number of the floes

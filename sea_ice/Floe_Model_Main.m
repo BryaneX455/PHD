@@ -155,15 +155,15 @@ for i = 2:N
     tangential_force_y = Glj .* thickness_min .* transverse_area .* tangential_force .* tangential_direction_y;
     
     % velocity induced by the contact forces
-    %save_contact_force_x(:,i-1) = 1./m .* sum(normal_force_x)' + 1./m .* sum(tangential_force_x)';
-    %save_contact_force_y(:,i-1) = 1./m .* sum(normal_force_y)' + 1./m .* sum(tangential_force_y)';
-    %save_contact_force_x_normal(:,i-1) = 1./m .* sum(normal_force_x)';
-    %save_contact_force_y_normal(:,i-1) = 1./m .* sum(normal_force_y)';
-    %save_contact_force_x_tangential(:,i-1) = 1./m .* sum(tangential_force_x)';
-    %save_contact_force_y_tangential(:,i-1) = 1./m .* sum(tangential_force_y)';
+    save_contact_force_x(:,i-1) = 1./m .* sum(normal_force_x)' + 1./m .* sum(tangential_force_x)';
+    save_contact_force_y(:,i-1) = 1./m .* sum(normal_force_y)' + 1./m .* sum(tangential_force_y)';
+    save_contact_force_x_normal(:,i-1) = 1./m .* sum(normal_force_x)';
+    save_contact_force_y_normal(:,i-1) = 1./m .* sum(normal_force_y)';
+    save_contact_force_x_tangential(:,i-1) = 1./m .* sum(tangential_force_x)';
+    save_contact_force_y_tangential(:,i-1) = 1./m .* sum(tangential_force_y)';
 
-    vc_x(:,i) = 0;% vc_x(:,i-1) + save_contact_force_x(:,i-1) * dt;
-    vc_y(:,i) = 0;% vc_y(:,i-1) + save_contact_force_y(:,i-1) * dt;
+    vc_x(:,i) = vc_x(:,i-1) + save_contact_force_x(:,i-1) * dt;
+    vc_y(:,i) = vc_y(:,i-1) + save_contact_force_y(:,i-1) * dt;
     % rotation
     t_o = beta_l .* ( exp(1i * x_loc * kk) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
 % t_o
