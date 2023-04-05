@@ -14,7 +14,7 @@ while l <= L
         l = l + 1;
     end
 end
-radius = ones(1,L)*0.3+0.3*rand(1,L);0.5;
+radius = ones(1,L)*0.3+0.3*rand(1,L);
 % sort the array in a descend way, facilitating determining the locations
 radius = sort(radius,'descend'); 
 figure

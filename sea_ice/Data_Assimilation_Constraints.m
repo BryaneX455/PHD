@@ -323,12 +323,12 @@ for i = 1:3
             hold on
             plot(dt:dt:N*dt, v_total_x(j,:), 'b', 'linewidth',2)
             plot(dt:dt:N*dt, gamma_mean_trace(j,:), 'r', 'linewidth',2)
-            title(['Floe # ', num2str(j),' translational velocity in x'],'fontsize',14)
+            title(['Floe # ', num2str(j),' trans velocity in x'],'fontsize',14)
         elseif i == 2
             hold on
             plot(dt:dt:N*dt, v_total_y(j,:), 'b', 'linewidth',2)
             plot(dt:dt:N*dt, gamma_mean_trace(L+j,:), 'r', 'linewidth',2)
-            title(['Floe # ', num2str(j),' translational velocity in y'],'fontsize',14)
+            title(['Floe # ', num2str(j),' trans velocity in y'],'fontsize',14)
         elseif i == 3
             hold on
             plot(dt:dt:N*dt, omega(j,:), 'b', 'linewidth',2)

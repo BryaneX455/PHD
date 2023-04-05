@@ -88,7 +88,7 @@ dt = 0.001; % time step
 N = round(T/dt);
 Dim_U = length(kk(1,:)); % dimension of the system
 Dim_Ug = length(k(1,:)); Dim_UB = Dim_Ug - 1;
-u_hat = zeros(Dim_U,N); % define all the Fourier modes
+u_hat = ones(Dim_U,N); % define all the Fourier modes
 d_B = 0.5; % damping of the GB modes
 d_g = 0.5; % damping of the gravity modes
 sigma_B = 0.15 * 8.64; % noise of the GB modes
@@ -133,9 +133,10 @@ Dim_Grid = 25;
 [xx,yy] = meshgrid(linspace(-25,25,Dim_Grid), linspace(-25,25,Dim_Grid));
 x_vec = [reshape(xx,[],1), reshape(yy,[],1)]; 
 figure(3) 
+hold off
 for i = 2:2:round(T/dt/100)
-    u = exp(1i * x_vec * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)))*8.64;
-    v = exp(1i * x_vec * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)))*8.64;
+    u = exp(1i * x_vec/2/pi*50 * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)))*8.64;
+    v = exp(1i * x_vec/2/pi*50 * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)))*8.64;
     u = reshape(u, Dim_Grid, Dim_Grid);
     v = reshape(v, Dim_Grid, Dim_Grid);
     quiver(xx, yy, u, v, 'linewidth',1)

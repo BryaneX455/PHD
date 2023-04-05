@@ -51,13 +51,14 @@ for i = 2:N
 %     G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) * diag(transpose(1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
 %     G2 = (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) * diag(transpose(rk(1,:)))); % Fourier bases for u
 %     G3 = (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) * diag(transpose(rk(2,:)))); % Fourier bases for v
-    G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
-    G2 = (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(1,:))); % Fourier bases for u
-    G3 = (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
+    G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk *50/2/pi) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
+    G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk *50/2/pi) .* (ones(L,1) * rk(1,:))); % Fourier bases for u
+    G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk *50/2/pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
+    
     
      % tracers; need to consider the cases near the boundaries 
-    diff_x1 = x(:,i) - x(:,i-1); diff_x2 = x(:,i) - x(:,i-1) + 2*pi; diff_x3 = x(:,i) - x(:,i-1) - 2*pi;  
-    diff_y1 = y(:,i) - y(:,i-1); diff_y2 = y(:,i) - y(:,i-1) + 2*pi; diff_y3 = y(:,i) - y(:,i-1) - 2*pi;  
+    diff_x1 = x(:,i) - x(:,i-1); diff_x2 = x(:,i) - x(:,i-1) + 50; diff_x3 = x(:,i) - x(:,i-1) - 50;  
+    diff_y1 = y(:,i) - y(:,i-1); diff_y2 = y(:,i) - y(:,i-1) + 50; diff_y3 = y(:,i) - y(:,i-1) - 50;  
     diff_xtemp = min(abs(diff_x1), abs(diff_x2)); diff_x_index = min(abs(diff_x3), diff_xtemp);
     diff_ytemp = min(abs(diff_y1), abs(diff_y2)); diff_y_index = min(abs(diff_y3), diff_ytemp);
     diff_x1_index = (diff_x_index == abs(diff_x1)); diff_x2_index = (diff_x_index == abs(diff_x2)); diff_x3_index = (diff_x_index == abs(diff_x3)); 
@@ -87,7 +88,7 @@ for i = 2:N
     a1 = [zeros(L,L)*1, zeros(L, L)*1, zeros(L, L)*1, G2;
           zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G3;
           zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G1;
-         zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u];
+         zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u*0];
     
     % run the data assimilation for posterior mean and posterior covariance
     gamma_mean = gamma_mean0 + (a0 + a1 * gamma_mean0) * dt + (gamma_cov0 * A1') * invBoB * (diff_xy - A0 * dt - A1 * gamma_mean0 * dt);

@@ -36,8 +36,8 @@ for i = 2:N
     x(:,i) = x(:,i-1) + (vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in x
     y(:,i) = y(:,i-1) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
     
-    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk .*50 /(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt; % velocity induced by the ocean velocity in u
-    vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk .*50 /(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt; % velocity induced by the ocean velocity in v
+    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc *50 /(2*pi) * kk) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt; % velocity induced by the ocean velocity in u
+    vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc *50 /(2*pi) * kk) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt; % velocity induced by the ocean velocity in v
     
    
     % rotation

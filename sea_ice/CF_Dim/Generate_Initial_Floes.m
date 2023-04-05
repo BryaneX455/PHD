@@ -60,8 +60,8 @@ for l = 1:L
     h = plot(xunit, yunit,'color',[0.2*radius(l),0.5,0.5]);
     text(Location(1,l),Location(2,l),num2str(thickness(l)));
 end
-xlim([0, 50 ])
-ylim([0, 50 ])
+xlim([0, 50])
+ylim([0, 50])
 box on
 xlabel('x')
 ylabel('y')
