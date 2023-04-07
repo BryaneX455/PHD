@@ -3,6 +3,7 @@
 
 % initial guess of parameters
 Thic_Est = 3.*thickness;
+a111 = 0;
 n1 = length(Thic_Est);
 KK = 50;
 Param_save = zeros(n1,KK);
