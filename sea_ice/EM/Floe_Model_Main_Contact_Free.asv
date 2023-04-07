@@ -37,17 +37,16 @@ for i = 2:N
     y(:,i) = y(:,i-1) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
     
    
-    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk *50.0 /(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
+    %vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk *50.0 /(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
     %vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
-    %vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
-    vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk *50.0 /(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt;
+    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
+    %vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk *50.0 /(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt;
     %vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt;
     %vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt;
    
     % rotation
     % t_o = beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
-    % t_o = beta_l .* ( exp(1i * x_loc * kk ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
-    t_o = beta_l .* ( exp(1i * x_loc * kk * 50 / (2 * pi)) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
+    t_o = beta_l .* ( exp(1i * x_loc * kk ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
     save_rotation_force(:,i-1) = 1./I .* (t_o); % ( sum( (ones(L,1) * radius)' .* (normal_direction_x .* tangential_force_y - normal_direction_y .* tangential_force_x))'  + t_o );
     omega(:,i) = omega(:,i-1) + save_rotation_force(:,i-1) * dt;
     % Periodic boundary conditions
