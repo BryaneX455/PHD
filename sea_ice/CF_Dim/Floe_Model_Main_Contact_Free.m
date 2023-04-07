@@ -36,24 +36,23 @@ for i = 2:N
     x(:,i) = x(:,i-1) + (vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in x
     y(:,i) = y(:,i-1) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
     
-    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk .*50 /(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt; % velocity induced by the ocean velocity in u
-    %vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk /50 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
-    vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk .*50 /(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt; % velocity induced by the ocean velocity in v
-    %vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk /50 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt;
+   
+    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk /50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
+    vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* 8.64.* (exp(1i * x_loc * kk /50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt;
    
     % rotation
-    t_o = beta_l .* ( exp(1i * x_loc * kk *50/ 2/ pi) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
+    t_o = beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
     save_rotation_force(:,i-1) = 1./I .* (t_o); % ( sum( (ones(L,1) * radius)' .* (normal_direction_x .* tangential_force_y - normal_direction_y .* tangential_force_x))'  + t_o );
     omega(:,i) = omega(:,i-1) + save_rotation_force(:,i-1) * dt;
     % Periodic boundary conditions
-    x(:,i) = mod(x(:,i),50);
-    y(:,i) = mod(y(:,i),50);
+    x(:,i) = mod(x(:,i),50.0);
+    y(:,i) = mod(y(:,i),50.0);
 % pause
 end
 v_total_x = vo_x;
 v_total_y = vo_y;
 
-[xx,yy] = meshgrid(linspace(0,50,Dim_Grid), linspace(0,50,Dim_Grid));
+[xx,yy] = meshgrid(linspace(0,50.0,Dim_Grid), linspace(0,50.0,Dim_Grid));
 x_vec = [reshape(xx,[],1), reshape(yy,[],1)]; 
 figure 
 for i = 1:100
@@ -66,12 +65,12 @@ for i = 1:100
         hh = plot(xunit, yunit,'color',[.2*radius(l),0.5,0.5]);
         text(x(l,1+100*(i-1)),y(l,1+100*(i-1)),num2str(omega(l,1+100*(i-1))));
     end
-    xlim([0, 50])
-    ylim([0, 50])
+    xlim([0, 50.0])
+    ylim([0, 50.0])
     box on    
     title(['t = ', num2str(dt*100*(i-1))])
-    u = exp(1i * x_vec * kk /2/pi*50) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)));
-    v = exp(1i * x_vec * kk /2/pi*50) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)));
+    u = exp(1i * x_vec * kk *2*pi/50.0) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)));
+    v = exp(1i * x_vec * kk *2*pi/50.0) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)));
     u = reshape(u, Dim_Grid, Dim_Grid);
     v = reshape(v, Dim_Grid, Dim_Grid);
     quiver(xx, yy, u, v, 'linewidth',1)

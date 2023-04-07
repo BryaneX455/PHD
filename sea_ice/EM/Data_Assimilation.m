@@ -1,5 +1,9 @@
 % Floe model data assimilation
+%% EM Algorithm Prelim
 
+% initial guess of parameters
+Thic_Est = 3.*thickness;
+%% EM Algorithm Begins
 % dimension of the underlying flow field
 Dim_U = length(u_hat(:,1));
 
