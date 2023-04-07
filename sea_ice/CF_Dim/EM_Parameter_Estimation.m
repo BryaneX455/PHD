@@ -64,7 +64,7 @@ sigma_y = sqrt(R(1,1)/dt);
 sigma_z = sqrt(R(2,2)/dt);
 n1 = length(Theta); % number of parameters in the deterministic part
 n2 = 3; % number of parameters in the stochastic part
-KK = 100; % Total number of EM iterations
+KK = 50; % Total number of EM iterations
 
 Param_save = zeros(n1+n2,KK); % save the parameters
 

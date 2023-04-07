@@ -1,4 +1,13 @@
 % Floe model data assimilation
+%% EM Algorithm Prelim
+
+% initial guess of parameters
+Thic_Est = 3.*thickness;
+n1 = length(Thic_Est);
+KK = 50;
+Param_save = zeros(n1,KK);
+Param_save(:,1) = Thic_Est;
+Param_truth = thickness;
 
 % dimension of the underlying flow field
 Dim_U = length(u_hat(:,1));
@@ -29,6 +38,7 @@ gamma_cov0 = eye(Dim_Y)*0.01;
 gamma_mean_trace(:,1) = gamma_mean0;
 gamma_cov_trace(:,1) = diag(gamma_cov0);
 
+%% EM Alg Starts
 
 % data assimilation
 for i = 2:N
@@ -38,9 +48,15 @@ for i = 2:N
     % observational operator 
     x_loc = [x(:,i-1),y(:,i-1)];
     
-    G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk * 2 * pi / 50 ) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
-    G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk /50.0*2*pi) .* (ones(L,1) * rk(1,:)));
-    G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk /50.0*2*pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
+    % G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk * 2 * pi / 50 ) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
+    % G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
+    G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk * 50 / (2 * pi)) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
+    G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk * 50.0/2/pi) .* (ones(L,1) * rk(1,:)));
+    % G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(1,:)));
+    % G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * rk(1,:)));
+    G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk * 50.0/2/pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
+    % G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
+    % G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
     
     
      % tracers; need to consider the cases near the boundaries 
