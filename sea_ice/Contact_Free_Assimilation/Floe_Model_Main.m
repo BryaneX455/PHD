@@ -30,7 +30,8 @@ Glj = 50 * ones(L,L);
 % mulj is the contraint coefficient for the tangential force |f_t^lj| <= mulj |f_n^lj| 
 mulj = 0.2 * ones(L,L);
 % m is the mass 
-m = 1000e9 * pi * (radius').^2 .* h;     m_truth = m;
+m = 1000e9 * pi * (radius').^2 .* h; %%% Added the density of ice in kg/km^3
+m_truth = m;
 % save the contact force
 save_contact_force_x = zeros(L,N);
 save_contact_force_y = zeros(L,N);
@@ -60,11 +61,11 @@ for i = 2:N
     x(:,i) = x(:,i-1) + (vc_x(:,i-1) + vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in x
     y(:,i) = y(:,i-1) + (vc_y(:,i-1) + vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
     
-    vo_x(:,i) = vo_x(:,i-1) + 8.64 * alpha_l ./ m .* (exp(1i * x_loc * kk * 50 / 2 / pi) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vc_x(:,i-1) - vo_x(:,i-1)) * dt; % velocity induced by the ocean velocity in u
-    vo_y(:,i) = vo_y(:,i-1) + 8.64 * alpha_l ./ m .* (exp(1i * x_loc * kk * 50 / 2 / pi) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vc_y(:,i-1) - vo_y(:,i-1)) * dt; % velocity induced by the ocean velocity in v
+    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk * 50 / 2 / pi) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vc_x(:,i-1) - vo_x(:,i-1)) * dt; % velocity induced by the ocean velocity in u
+    vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk * 50 / 2 / pi) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vc_y(:,i-1) - vo_y(:,i-1)) * dt; % velocity induced by the ocean velocity in v
     
-    u_save(:,i) = exp(1i * x_loc * kk * 50 / 2 / pi) * (u_hat(:,i-1) .* transpose(rk(1,:)));
-    v_save(:,i) = exp(1i * x_loc * kk * 50 / 2 / pi) * (u_hat(:,i-1) .* transpose(rk(2,:)));
+    u_save(:,i) = 8.64 * exp(1i * x_loc * kk * 50 / 2 / pi) * (u_hat(:,i-1) .* transpose(rk(1,:)));
+    v_save(:,i) = 8.64 * exp(1i * x_loc * kk * 50 / 2 / pi) * (u_hat(:,i-1) .* transpose(rk(2,:)));
     
     % computing the distance between the centers of different floes
     distance_x1 = abs(x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)'); % computing the distance in the general case inside the domain
@@ -100,10 +101,10 @@ for i = 2:N
     distance_vector_x1_temp = (distance_every_two_floes .* projection_x - distance_x1) .* (x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)') ...
         ./ abs(x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' + eps * eye(L)) .* equal_temp_x1; % compressive distance in x direction
     % compression length in x direction * unit vector in x (determining the positive or negative sign) * the selected cases
-    distance_vector_x2_temp = (distance_every_two_floes .* projection_x - distance_x2) .* (x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' + 2*pi) ...
-        ./ abs(x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' + 2*pi).* equal_temp_x2;
-    distance_vector_x3_temp = (distance_every_two_floes.* projection_x - distance_x3) .* (x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' - 2*pi) ...
-        ./ abs(x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' - 2*pi).* equal_temp_x3;
+    distance_vector_x2_temp = (distance_every_two_floes .* projection_x - distance_x2) .* (x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' + 50) ...
+        ./ abs(x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' + 50).* equal_temp_x2;
+    distance_vector_x3_temp = (distance_every_two_floes.* projection_x - distance_x3) .* (x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' - 50) ...
+        ./ abs(x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' - 50).* equal_temp_x3;
     normal_force_x = - Elj .* thickness_min .* transverse_area .* (distance_vector_x1_temp + distance_vector_x2_temp + distance_vector_x3_temp); % resistence forcing in the x direction
 %     pause
 
@@ -113,20 +114,20 @@ for i = 2:N
     distance_vector_y1_temp = (distance_every_two_floes .* projection_y - distance_y1) .* (y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)') ...
         ./ abs(y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' + eps * eye(L)) .* equal_temp_y1; % compressive distance in y direction
     % compression length in y direction * unit vector in x (determining the positive or negative sign) * the selected cases
-    distance_vector_y2_temp = (distance_every_two_floes .* projection_y - distance_y2) .* (y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' + 50) ...
+    distance_vector_y2_temp = (distance_every_two_floes .* projection_y - distance_y2) .* (y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' + 2*pi) ...
         ./ abs(y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' + 2*pi).* equal_temp_y2;
-    distance_vector_y3_temp = (distance_every_two_floes.* projection_y - distance_y3) .* (y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' - 50) ...
+    distance_vector_y3_temp = (distance_every_two_floes.* projection_y - distance_y3) .* (y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' - 2*pi) ...
         ./ abs(y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' - 2*pi).* equal_temp_y3;
     normal_force_y = - Elj .* thickness_min .* transverse_area .* (distance_vector_y1_temp + distance_vector_y2_temp + distance_vector_y3_temp); % resistence forcing in the y direction
     
     
     % computing the normal unit vector (outside direction, pointing towards the other floe)
     normal_direction_x = ((x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)') .* equal_temp_x1 +...
-        (x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' + 2*pi) .* equal_temp_x2 +...
-        (x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' - 2*pi) .* equal_temp_x3) ./ (distance + eps * eye(L));
+        (x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' + 50) .* equal_temp_x2 +...
+        (x(:,i-1) * ones(1,L) - ones(L,1) * x(:,i-1)' - 50) .* equal_temp_x3) ./ (distance + eps * eye(L));
     normal_direction_y = ((y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)') .* equal_temp_y1 +...
-        (y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' + 2*pi) .* equal_temp_y2 +...
-        (y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' - 2*pi) .* equal_temp_y3) ./ (distance + eps * eye(L));
+        (y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' + 50) .* equal_temp_y2 +...
+        (y(:,i-1) * ones(1,L) - ones(L,1) * y(:,i-1)' - 50) .* equal_temp_y3) ./ (distance + eps * eye(L));
     
     % computing the tangential unit vector (a 90degree rotation from the normal vector; 
     % the positive direction of the tangential vector doesn't matter since the projections
@@ -165,15 +166,15 @@ for i = 2:N
     vc_x(:,i) = vc_x(:,i-1) + save_contact_force_x(:,i-1) * dt;
     vc_y(:,i) = vc_y(:,i-1) + save_contact_force_y(:,i-1) * dt;
     % rotation
-    t_o = beta_l .* ( exp(1i * x_loc * kk * 50 / 2 / pi) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
+    t_o = beta_l .* ( exp(1i * x_loc * kk *50 / 2/ pi) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ); 
 % t_o
 %     pause
 
     save_rotation_force(:,i-1) = 1./I .* ( sum( (ones(L,1) * radius)' .* (normal_direction_x .* tangential_force_y - normal_direction_y .* tangential_force_x))'  + t_o );
     omega(:,i) = omega(:,i-1) + save_rotation_force(:,i-1) * dt;
     % Periodic boundary conditions
-    x(:,i) = mod(x(:,i),2*pi);
-    y(:,i) = mod(y(:,i),2*pi);
+    x(:,i) = mod(x(:,i),50);
+    y(:,i) = mod(y(:,i),50);
 %     pause
 end
 v_total_x = vc_x + vo_x;
@@ -184,6 +185,7 @@ v_total_y = vc_y + vo_y;
 x_vec = [reshape(xx,[],1), reshape(yy,[],1)]; 
 figure(3) 
 for i = 1:100
+%     clf
     plot(0,0)
     hold on
     for l = 1:L
@@ -192,13 +194,14 @@ for i = 1:100
         yunit = radius(l) * sin(th) + y(l,1+100*(i-1));
         hh = plot(xunit, yunit,'color',[.2*radius(l),0.5,0.5]);
         text(x(l,1+100*(i-1)),y(l,1+100*(i-1)),num2str(omega(l,1+100*(i-1))));
+%         text(x(l,1+100*(i-1)),y(l,1+100*(i-1)),num2str(thickness(l)));
     end
     xlim([0, 50 ])
     ylim([0, 50 ])
     box on    
     title(['t = ', num2str(dt*100*(i-1))])
-    u = exp(1i * x_vec * kk * 50 / 2 / pi) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)));
-    v = exp(1i * x_vec * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)));
+    u = exp(1i * x_vec * kk * 50 / 2 /pi) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)));
+    v = exp(1i * x_vec * kk * 50 / 2 / pi) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)));
     u = reshape(u, Dim_Grid, Dim_Grid);
     v = reshape(v, Dim_Grid, Dim_Grid);
     quiver(xx, yy, u, v, 'linewidth',1)

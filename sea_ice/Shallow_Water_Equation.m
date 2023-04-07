@@ -119,14 +119,7 @@ for i = 2:N
     t = i*dt;
     a0(1:2:end-3) =0;f_amp * exp(1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1); 0.4+0.4*1i;%
     a0(2:2:end-2) =0;f_amp * exp(- 1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1); 0.4-0.4*1i;%
-%     a0(115) = (1+1i)/2;f_amp * exp(  1i * f_phase * t);
-%     a0(116) = (1-1i)/2;f_amp * exp(- 1i * f_phase * t);
-%     a0(123) = (1+1i)/2;f_amp * exp(  1i * f_phase * t);
-%     a0(124) = (1-1i)/2;f_amp * exp(- 1i * f_phase * t);
-%     a0(121) = 0;f_amp * exp(  1i * f_phase * t);(1+1i)/2;
-%     a0(122) = 0;f_amp * exp(- 1i * f_phase * t);(1-1i)/2;
-%     a0(109) = 0;f_amp * exp(  1i * f_phase * t);(1+1i)/2;
-%     a0(110) = 0;f_amp * exp(- 1i * f_phase * t);(1-1i)/2;
+
     a0(end-1) = 0;f_amp * cos(f_phase * t) + f_x_b;0;
     a0(end) = 0;f_amp * sin(f_phase * t) + f_y_b; 0;   
     u_hat(:,i) = u_hat(:,i-1) + (L_u * u_hat(:,i-1) + a0) * dt + Sigma_u * sqrt(dt) * rd(:, i);
@@ -153,24 +146,6 @@ for i = 2:2:round(T/dt/100)
     pause(0.1);
     
 end
-
-% figure
-% for i = 1:9
-%     subplot(3,3,i)
-%     u = exp(1i * x_vec * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)));
-%     v = exp(1i * x_vec * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)));
-%     u = reshape(u, Dim_Grid, Dim_Grid);
-%     v = reshape(v, Dim_Grid, Dim_Grid);
-%     quiver(xx, yy, u, v, 'linewidth',1)
-% %     xlim([0, 2*pi ])
-% %     ylim([0, 2*pi ])
-%     xlim([-pi, pi ])
-%     ylim([-pi, pi ])
-%     box on    
-%     title(['t = ', num2str(dt*100*(i-1))])
-% %     pause(0.1);
-%     
-% end
 
 
 figure

@@ -2,7 +2,7 @@
 % Parameter estimation with partial observations via expectation-maximization
 % algorithm; the test model here is the noisy Lorenz 84 model, where the
 % observed variables are y and z while x is unobserved
-
+close all; clear all;
 rng(11) % fix the random number seed to reproduce the results
 N = 10000; % total number of numerical integration time step
 dt = 0.001; % numerical integration time step
@@ -20,9 +20,6 @@ sigma_x_truth = .1;
 sigma_y_truth = .1;
 sigma_z_truth = .1;
 
-% sigma_x_truth = 3;
-% sigma_y_truth = 3;
-% sigma_z_truth = 3;
 
 % generating the true signal
 for i = 2:N
@@ -67,7 +64,7 @@ sigma_y = sqrt(R(1,1)/dt);
 sigma_z = sqrt(R(2,2)/dt);
 n1 = length(Theta); % number of parameters in the deterministic part
 n2 = 3; % number of parameters in the stochastic part
-KK = 200; % Total number of EM iterations
+KK = 100; % Total number of EM iterations
 
 Param_save = zeros(n1+n2,KK); % save the parameters
 
@@ -258,110 +255,110 @@ for i = 1:n1+n2
 end
 
 % the estimated parameters, which are the final value of the iteration
-g_est = Param_save(1,end);
-b_est = Param_save(2,end);
-a_est = Param_save(3,end);
-f_est = Param_save(4,end);
-sigma_x_est = Param_save(5,end);
-sigma_y_est = Param_save(6,end);
-sigma_z_est = Param_save(7,end);
-figure
-subplot(3,1,1)
-hold on
-plot(dt:dt:N*dt,x_truth,'b','linewidth',2)
-plot(dt:dt:N*dt,mu_s_2,'c','linewidth',2)
-patch([dt:dt:N*dt,N*dt:-dt:dt],[mu_s_2+2*sqrt(R_s_2),mu_s_2(end:-1:1)-2*sqrt(R_s_2(end:-1:1))],'c','facealpha',0.2,'linestyle','none');
-box on
-set(gca,'fontsize',12)
-legend('Truth of x','Smoother')
-title('After k = 2 iteration steps')
-subplot(3,1,2)
-hold on
-plot(dt:dt:N*dt,x_truth,'b','linewidth',2)
-plot(dt:dt:N*dt,mu_s_5,'c','linewidth',2)
-patch([dt:dt:N*dt,N*dt:-dt:dt],[mu_s_5+2*sqrt(R_s_5),mu_s_5(end:-1:1)-2*sqrt(R_s_5(end:-1:1))],'c','facealpha',0.2,'linestyle','none');
-box on
-set(gca,'fontsize',12)
-title('After k = 5 iteration steps')
-subplot(3,1,3)
-hold on
-plot(dt:dt:N*dt,x_truth,'b','linewidth',2)
-plot(dt:dt:N*dt,mu_s,'c','linewidth',2)
-patch([dt:dt:N*dt,N*dt:-dt:dt],[mu_s+2*sqrt(R_s),mu_s(end:-1:1)-2*sqrt(R_s(end:-1:1))],'c','facealpha',0.2,'linestyle','none');
-box on
-set(gca,'fontsize',12)
-title('At the last iteration steps')
-
-N2 = N*50;
-x_truth2 = zeros(1,N2);
-y_truth2 = zeros(1,N2);
-z_truth2 = zeros(1,N2);
-x_est = zeros(1,N);
-y_est = zeros(1,N);
-z_est = zeros(1,N);
-% comparing the model trajectories and statistics between the one with the
-% true parameters and the one with the estimated parameters
-for i = 2:N2
-    x_truth2(i) = x_truth2(i-1) + ( - (y_truth2(i-1)^2 + z_truth2(i-1)^2) - a_truth * x_truth2(i-1) + f_truth) * dt + sigma_x_truth * randn * sqrt(dt);
-    y_truth2(i) = y_truth2(i-1) + ( - b_truth * x_truth2(i-1) * z_truth2(i-1) + x_truth2(i-1) * y_truth2(i-1) - y_truth2(i-1) + g_truth) * dt + sigma_y_truth * randn * sqrt(dt);
-    z_truth2(i) = z_truth2(i-1) + ( b_truth * x_truth2(i-1) * y_truth2(i-1) + x_truth2(i-1) * z_truth2(i-1) - z_truth2(i-1)) * dt + sigma_z_truth * randn * sqrt(dt);
-end
-
-for i = 2:N2
-    x_est(i) = x_est(i-1) + ( - (y_est(i-1)^2 + z_est(i-1)^2) - a_est * x_est(i-1) + f_est) * dt + sigma_x_est * randn * sqrt(dt);
-    y_est(i) = y_est(i-1) + ( - b_est * x_est(i-1) * z_est(i-1) + x_est(i-1) * y_est(i-1) - y_est(i-1) + g_est) * dt + sigma_y_est * randn * sqrt(dt);
-    z_est(i) = z_est(i-1) + ( b_est * x_est(i-1) * y_est(i-1) + x_est(i-1) * z_est(i-1) - z_est(i-1)) * dt + sigma_z_est * randn * sqrt(dt);
-end
-Lag = 5000; % lag in computing the ACF
-figure
-for i = 1:3
-    if i == 1
-        variable1 = x_truth2;
-        variable2 = x_est;
-    elseif i == 2
-        variable1 = y_truth2;
-        variable2 = y_est;
-    elseif i == 3
-        variable1 = z_truth2;
-        variable2 = z_est;
-    end
-    subplot(3,5,[1:3]+5*(i-1))
-    hold on
-    plot(dt:dt:N2*dt,variable1,'b','linewidth',2)
-    plot(dt:dt:N2*dt,variable2,'r','linewidth',2)
-    box on
-    set(gca,'fontsize',16)
-    if i == 1
-        title('Time series of x')
-    elseif i == 2
-        title('Time series of y')
-    else
-        title('Time series of z')
-        xlabel('t')
-    end
-    subplot(3,5,4+5*(i-1))
-    ACF1 = autocorr(variable1, Lag);
-    ACF2 = autocorr(variable2, Lag);
-    hold on
-    plot(0:dt:Lag*dt, ACF1,'b','linewidth',2)
-    plot(0:dt:Lag*dt, ACF2,'r','linewidth',2)
-    box on
-    set(gca,'fontsize',16)
-    if i == 1
-        title('ACF')
-    end
-    if i == 3
-        xlabel('t')
-    end
-    subplot(3,5,5+5*(i-1))
-    [fi1,xx] = ksdensity(variable1(1:10:end));
-    [fi2,xx] = ksdensity(variable2(1:10:end),xx);
-    hold on
-    plot(xx,fi1,'b','linewidth',2)
-    plot(xx,fi2,'r','linewidth',2)
-    box on
-    set(gca,'fontsize',16)
-    if i == 1
-        title('PDF')
-    end
-end
+% g_est = Param_save(1,end);
+% b_est = Param_save(2,end);
+% a_est = Param_save(3,end);
+% f_est = Param_save(4,end);
+% sigma_x_est = Param_save(5,end);
+% sigma_y_est = Param_save(6,end);
+% sigma_z_est = Param_save(7,end);
+% figure
+% subplot(3,1,1)
+% hold on
+% plot(dt:dt:N*dt,x_truth,'b','linewidth',2)
+% plot(dt:dt:N*dt,mu_s_2,'c','linewidth',2)
+% patch([dt:dt:N*dt,N*dt:-dt:dt],[mu_s_2+2*sqrt(R_s_2),mu_s_2(end:-1:1)-2*sqrt(R_s_2(end:-1:1))],'c','facealpha',0.2,'linestyle','none');
+% box on
+% set(gca,'fontsize',12)
+% legend('Truth of x','Smoother')
+% title('After k = 2 iteration steps')
+% subplot(3,1,2)
+% hold on
+% plot(dt:dt:N*dt,x_truth,'b','linewidth',2)
+% plot(dt:dt:N*dt,mu_s_5,'c','linewidth',2)
+% patch([dt:dt:N*dt,N*dt:-dt:dt],[mu_s_5+2*sqrt(R_s_5),mu_s_5(end:-1:1)-2*sqrt(R_s_5(end:-1:1))],'c','facealpha',0.2,'linestyle','none');
+% box on
+% set(gca,'fontsize',12)
+% title('After k = 5 iteration steps')
+% subplot(3,1,3)
+% hold on
+% plot(dt:dt:N*dt,x_truth,'b','linewidth',2)
+% plot(dt:dt:N*dt,mu_s,'c','linewidth',2)
+% patch([dt:dt:N*dt,N*dt:-dt:dt],[mu_s+2*sqrt(R_s),mu_s(end:-1:1)-2*sqrt(R_s(end:-1:1))],'c','facealpha',0.2,'linestyle','none');
+% box on
+% set(gca,'fontsize',12)
+% title('At the last iteration steps')
+% 
+% N2 = N*50;
+% x_truth2 = zeros(1,N2);
+% y_truth2 = zeros(1,N2);
+% z_truth2 = zeros(1,N2);
+% x_est = zeros(1,N);
+% y_est = zeros(1,N);
+% z_est = zeros(1,N);
+% % comparing the model trajectories and statistics between the one with the
+% % true parameters and the one with the estimated parameters
+% for i = 2:N2
+%     x_truth2(i) = x_truth2(i-1) + ( - (y_truth2(i-1)^2 + z_truth2(i-1)^2) - a_truth * x_truth2(i-1) + f_truth) * dt + sigma_x_truth * randn * sqrt(dt);
+%     y_truth2(i) = y_truth2(i-1) + ( - b_truth * x_truth2(i-1) * z_truth2(i-1) + x_truth2(i-1) * y_truth2(i-1) - y_truth2(i-1) + g_truth) * dt + sigma_y_truth * randn * sqrt(dt);
+%     z_truth2(i) = z_truth2(i-1) + ( b_truth * x_truth2(i-1) * y_truth2(i-1) + x_truth2(i-1) * z_truth2(i-1) - z_truth2(i-1)) * dt + sigma_z_truth * randn * sqrt(dt);
+% end
+% 
+% for i = 2:N2
+%     x_est(i) = x_est(i-1) + ( - (y_est(i-1)^2 + z_est(i-1)^2) - a_est * x_est(i-1) + f_est) * dt + sigma_x_est * randn * sqrt(dt);
+%     y_est(i) = y_est(i-1) + ( - b_est * x_est(i-1) * z_est(i-1) + x_est(i-1) * y_est(i-1) - y_est(i-1) + g_est) * dt + sigma_y_est * randn * sqrt(dt);
+%     z_est(i) = z_est(i-1) + ( b_est * x_est(i-1) * y_est(i-1) + x_est(i-1) * z_est(i-1) - z_est(i-1)) * dt + sigma_z_est * randn * sqrt(dt);
+% end
+% Lag = 5000; % lag in computing the ACF
+% figure
+% for i = 1:3
+%     if i == 1
+%         variable1 = x_truth2;
+%         variable2 = x_est;
+%     elseif i == 2
+%         variable1 = y_truth2;
+%         variable2 = y_est;
+%     elseif i == 3
+%         variable1 = z_truth2;
+%         variable2 = z_est;
+%     end
+%     subplot(3,5,[1:3]+5*(i-1))
+%     hold on
+%     plot(dt:dt:N2*dt,variable1,'b','linewidth',2)
+%     plot(dt:dt:N2*dt,variable2,'r','linewidth',2)
+%     box on
+%     set(gca,'fontsize',16)
+%     if i == 1
+%         title('Time series of x')
+%     elseif i == 2
+%         title('Time series of y')
+%     else
+%         title('Time series of z')
+%         xlabel('t')
+%     end
+%     subplot(3,5,4+5*(i-1))
+%     ACF1 = autocorr(variable1, Lag);
+%     ACF2 = autocorr(variable2, Lag);
+%     hold on
+%     plot(0:dt:Lag*dt, ACF1,'b','linewidth',2)
+%     plot(0:dt:Lag*dt, ACF2,'r','linewidth',2)
+%     box on
+%     set(gca,'fontsize',16)
+%     if i == 1
+%         title('ACF')
+%     end
+%     if i == 3
+%         xlabel('t')
+%     end
+%     subplot(3,5,5+5*(i-1))
+%     [fi1,xx] = ksdensity(variable1(1:10:end));
+%     [fi2,xx] = ksdensity(variable2(1:10:end),xx);
+%     hold on
+%     plot(xx,fi1,'b','linewidth',2)
+%     plot(xx,fi2,'r','linewidth',2)
+%     box on
+%     set(gca,'fontsize',16)
+%     if i == 1
+%         title('PDF')
+%     end
+% end

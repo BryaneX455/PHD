@@ -1,4 +1,4 @@
-close all% Floe model data assimilation
+% Floe model data assimilation
 
 % dimension of the underlying flow field
 Dim_U = length(u_hat(:,1));
@@ -28,17 +28,7 @@ gamma_cov0 = eye(Dim_Y)*0.01;
 
 gamma_mean_trace(:,1) = gamma_mean0;
 gamma_cov_trace(:,1) = diag(gamma_cov0);
-% gamma_cov0 = zeros(Dim_Y);
-% gamma_cov0 = cov_temp;
-% for i = 1:3*L
-%     gamma_cov0(i,i) = 0.005;
-% end
-% for i = 3*L+1: 3*L+Dim_Ug*2
-%     gamma_cov0(i,i) = sigma_g^2/(d_g + sqrt(d_g^2 + L*sigma_x^(-2)*sigma_g^2));
-% end
-% for i = 3*L+Dim_Ug * 2: 3*L+Dim_Ug * 2 + Dim_UB
-%     gamma_cov0(i,i) = sigma_B^2/(d_B + sqrt(d_B^2 + L*sigma_x^(-2)*sigma_B^2));
-% end
+
 
 % data assimilation
 for i = 2:N
@@ -48,19 +38,14 @@ for i = 2:N
     % observational operator 
     x_loc = [x(:,i-1),y(:,i-1)];
     
-%     G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) * diag(transpose(1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
-%     G2 = (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) * diag(transpose(rk(1,:)))); % Fourier bases for u
-%     G3 = (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) * diag(transpose(rk(2,:)))); % Fourier bases for v
-    G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk *50/2/pi) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
-    G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk *50/2/pi) .* (ones(L,1) * rk(1,:))); % Fourier bases for u
-    %G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk /50*2*pi) .* (ones(L,1) * rk(1,:)));
-    G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk *50/2/pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
-    %G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk /50*2*pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
+    G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk * 2 * pi / 50 ) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
+    G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk /50.0*2*pi) .* (ones(L,1) * rk(1,:)));
+    G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk /50.0*2*pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
     
     
      % tracers; need to consider the cases near the boundaries 
-    diff_x1 = x(:,i) - x(:,i-1); diff_x2 = x(:,i) - x(:,i-1) + 50; diff_x3 = x(:,i) - x(:,i-1) - 50;  
-    diff_y1 = y(:,i) - y(:,i-1); diff_y2 = y(:,i) - y(:,i-1) + 50; diff_y3 = y(:,i) - y(:,i-1) - 50;  
+    diff_x1 = x(:,i) - x(:,i-1); diff_x2 = x(:,i) - x(:,i-1) + 50.0; diff_x3 = x(:,i) - x(:,i-1) - 50.0;  
+    diff_y1 = y(:,i) - y(:,i-1); diff_y2 = y(:,i) - y(:,i-1) + 50.0; diff_y3 = y(:,i) - y(:,i-1) - 50.0;  
     diff_xtemp = min(abs(diff_x1), abs(diff_x2)); diff_x_index = min(abs(diff_x3), diff_xtemp);
     diff_ytemp = min(abs(diff_y1), abs(diff_y2)); diff_y_index = min(abs(diff_y3), diff_ytemp);
     diff_x1_index = (diff_x_index == abs(diff_x1)); diff_x2_index = (diff_x_index == abs(diff_x2)); diff_x3_index = (diff_x_index == abs(diff_x3)); 
@@ -76,8 +61,8 @@ for i = 2:N
     % matrix a0
     F_u = zeros(Dim_U, 1);
     t = i*dt;
-    F_u(1:2:end-3) =0; 0.4+0.4*1i;%f_amp * exp(1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
-    F_u(2:2:end-2) =0; 0.4-0.4*1i;%f_amp * exp(- 1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
+    F_u(1:2:end-3) =0; 0.4 + 0.4*1i;%f_amp * exp(1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
+    F_u(2:2:end-2) =0; 0.4 - 0.4*1i;%f_amp * exp(- 1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
     F_u(end-1) = 0;f_amp * cos(f_phase * t) + f_x_b;0;
     F_u(end) = 0;f_amp * sin(f_phase * t) + f_y_b; 0;   
     

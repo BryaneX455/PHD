@@ -121,23 +121,22 @@ rd(1:end-2, :) = randn(Dim_Ug * 2 + Dim_UB, N);
 a0 = zeros(Dim_U, 1);
 for i = 2:N
     t = i*dt;
-    a0(1:2:end-3) =0; f_amp * exp(1i * f_phase * t * 50 /(2*pi)) * ones(Dim_Ug + Dim_UB/2, 1); 0.4+0.4*1i;
-    %a0(1:2:end-3) =0; f_amp * exp(1i * f_phase * t / 50 *(2*pi)) * ones(Dim_Ug + Dim_UB/2, 1); 0.4+0.4*1i;
-    a0(2:2:end-2) =0; f_amp * exp(- 1i * f_phase * t * 50 /(2*pi)) * ones(Dim_Ug + Dim_UB/2, 1); 0.4-0.4*1i;
-    %a0(2:2:end-2) =0; f_amp * exp(- 1i * f_phase * t / 50 *(2*pi)) * ones(Dim_Ug + Dim_UB/2, 1); 0.4-0.4*1i;
+    a0(1:2:end-3) =0; f_amp * exp(1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1); 0.4+0.4*1i;
+    a0(2:2:end-2) =0; f_amp * exp(- 1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1); 0.4-0.4*1i;
     a0(end-1) = 0;f_amp * cos(f_phase * t) + f_x_b;0;
     a0(end) = 0;f_amp * sin(f_phase * t) + f_y_b; 0;   
     u_hat(:,i) = u_hat(:,i-1) + (L_u * u_hat(:,i-1) + a0) * dt + Sigma_u * sqrt(dt) * rd(:, i);
 end
 
 % reconstruction
-Dim_Grid = 15;
+Dim_Grid = 40;
 [xx,yy] = meshgrid(linspace(-25,25,Dim_Grid), linspace(-25,25,Dim_Grid));
 x_vec = [reshape(xx,[],1), reshape(yy,[],1)]; 
 figure 
+hold on
 for i = 2:2:round(T/dt/100)
-    u = exp(1i * x_vec /2/pi*50 * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)))*8.64;
-    v = exp(1i * x_vec /2/pi*50 * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)))*8.64;
+    u = exp(1i * x_vec *2*pi/50 * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)))*8.64;
+    v = exp(1i * x_vec *2*pi/50 * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)))*8.64;
     u = reshape(u, Dim_Grid, Dim_Grid);
     v = reshape(v, Dim_Grid, Dim_Grid);
     quiver(xx, yy, u, v, 'linewidth',1)
