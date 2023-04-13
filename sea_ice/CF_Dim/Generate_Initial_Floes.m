@@ -48,7 +48,7 @@ for l = 2:L
 end
 
 % floe thickness
-thickness = 0.5*rand(1,L)*0 + 1; thickness = round(thickness * 100) / 100;
+thickness = 0.5*rand(1,L)*0 + 1; thickness = round(thickness * 100) / 100 * 0.008;
 
 % plotting the floes
 figure 

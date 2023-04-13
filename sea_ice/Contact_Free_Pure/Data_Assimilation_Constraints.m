@@ -28,17 +28,7 @@ gamma_cov0 = eye(Dim_Y)*0.01;
 
 gamma_mean_trace(:,1) = gamma_mean0;
 gamma_cov_trace(:,1) = diag(gamma_cov0);
-% gamma_cov0 = zeros(Dim_Y);
-% gamma_cov0 = cov_temp;
-% for i = 1:3*L
-%     gamma_cov0(i,i) = 0.005;
-% end
-% for i = 3*L+1: 3*L+Dim_Ug*2
-%     gamma_cov0(i,i) = sigma_g^2/(d_g + sqrt(d_g^2 + L*sigma_x^(-2)*sigma_g^2));
-% end
-% for i = 3*L+Dim_Ug * 2: 3*L+Dim_Ug * 2 + Dim_UB
-%     gamma_cov0(i,i) = sigma_B^2/(d_B + sqrt(d_B^2 + L*sigma_x^(-2)*sigma_B^2));
-% end
+
 
 % data assimilation
 for i = 2:N

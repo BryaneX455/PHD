@@ -14,17 +14,17 @@ omega = zeros(L,N); % angular velocity
 
 % m is the mass 
 h = thickness';
-m =  pi * (radius').^2 .* h * 4 * pi^2 / 2500;     m_truth = m;
+m = 1000e9 * pi * (radius').^2 .* h;     m_truth = m;
 save_rotation_force = zeros(L,N);
 
 % ocean drag coefficient, density, portion inside ocean
-d_o = 1; rho_o = 1; c_o = 0.9;
-alpha_l = d_o * rho_o * pi * radius'.^2 * 4 * pi^2 / 2500;
+d_o = 1; rho_o = 1000e9; c_o = 0.9;
+alpha_l = d_o * rho_o * pi * radius'.^2 .* h;
 alpha_L = diag([alpha_l;alpha_l]);
 % moment of inertia
-I = m .* (radius').^2 * 4 * pi^2 / 2500;
+I = m .* (radius').^2;
 % ocean induced vorticity coefficient
-beta_l = d_o * rho_o * pi * (radius').^2 .* (radius').^2 * 16 * (pi^4) / 2500^2;
+beta_l = d_o * rho_o * pi * (radius').^2 .* (radius').^2 * 16 * pi^4 / 2500 / 2500;
 
 for i = 2:N
     if mod(i,1000) == 0
@@ -36,8 +36,8 @@ for i = 2:N
     x(:,i) = x(:,i-1) + (vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in x
     y(:,i) = y(:,i-1) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
     
-    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* 50/2/pi.* (exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
-    vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* 50/2/pi.* (exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt;
+    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* (50/2/pi.*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
+    vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* (50/2/pi.*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt;
    
     % rotation
     t_o = beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) );  
