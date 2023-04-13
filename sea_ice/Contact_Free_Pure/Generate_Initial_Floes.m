@@ -49,7 +49,7 @@ end
 % Location(:,2) = [5,pi/2*3-0.5];
 
 % floe thickness
-thickness = 0.5*rand(1,L)*0 + 1; thickness = round(thickness * 100) / 100;
+thickness = 0.5*rand(1,L)*0 + 1; thickness = round(thickness * 100) / 100; %%% changed floe thickness to match the dimensionalization
 
 % plotting the floes
 figure 
