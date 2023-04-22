@@ -91,11 +91,11 @@ Dim_Ug = length(k(1,:)); Dim_UB = Dim_Ug - 1;
 u_hat = zeros(Dim_U,N); % define all the Fourier modes
 d_B = 0.5; % damping of the GB modes
 d_g = 0.5; % damping of the gravity modes
-sigma_B = 0.4;% * 8.64; % noise of the GB modes
-sigma_g = 0.4;% * 8.64; % noise of the gravity modes
-f_amp = 1.6;% * 8.64; % large-scale forcing amplitude
+sigma_B = 0.4; % noise of the GB modes
+sigma_g = 0.4; % noise of the gravity modes
+f_amp = 1.6; % large-scale forcing amplitude
 f_phase = 14; % large-scale forcing period
-f_x_b = 0.5; % * 8.64; % large-scale forcing background in x direction
+f_x_b = 0.5;  % large-scale forcing background in x direction
 f_y_b = 0;% large-scale forcing background in y direction
 % b1: noise coefficient; a1: damping and phase 
 b1 = zeros(Dim_U, Dim_U);

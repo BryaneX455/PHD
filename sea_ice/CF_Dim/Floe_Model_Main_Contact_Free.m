@@ -17,35 +17,21 @@ h = thickness';
 
 
 save_rotation_force = zeros(L,N);
-
-% ocean drag coefficient, density, portion inside ocean
-%d_o = 1; rho_o = 1; c_o = 0.9;
-
-
-% 2*force/(density*speed^2*area)
-% 2*mass*(length/time^2)/((mass/length^3)*(length^2/time^2)*length^2)
-% 2*mass*(1/time^2)/((mass)*(1/time^2))
-
-
-ice_density = 1e3*1e9; % 1000 kg/m^3 * 1e9 m^3/km^3
+ice_density = 1e12; % 1000 kg/m^3 * 1e9 m^3/km^3
 thickness_in_km = h/1e3;
 m =  ice_density * pi * (radius').^2 .* thickness_in_km;
 m_truth = m;
 
 % ocean drag coefficient, density, portion inside ocean
-d_o = 1; rho_o = 1; c_o = 0.9;
+d_o = 1; rho_o = 1e12; c_o = 0.9;
 
-rho_o = 1000*1e9; % 1e3 kg/m^3 * 1e9 m^3/km^3
-
-alpha_l = d_o * rho_o * pi * (radius').^2 * 1e-3; % Not sure why we need 1e-3;
+alpha_l = d_o * rho_o * pi * (radius').^2 * 1e-3; % The 1e-3 comes from the compensation for the thickness of the floes
 alpha_L = diag([alpha_l;alpha_l]);
 % moment of inertia
 I = m .* (radius').^2;
 % ocean induced vorticity coefficient
 beta_l = d_o * rho_o * pi * (radius').^2 .* (radius').^2 * 1e-3;
 
-alpha_l = d_o * rho_o * 1e-3;
-m =  ice_density * thickness_in_km;
 
 
 for i = 2:N

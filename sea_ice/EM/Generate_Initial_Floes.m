@@ -1,27 +1,27 @@
 clear all; clc; close all;
 % Generate the initial floes, including the locations and radii
 rng(100)
-L = 36;36;24;48;2; % total number of the floes
-r_min = 50/100*4; % minimum radius
-r_max = 50/20*2; % maximum radius
+L = 36; % total number of the floes
+r_min = 2*pi/100*4; % minimum radius
+r_max = 2*pi/20*2; % maximum radius
 radius = zeros(1,L);
 l = 1;
 % determining the floe radii
 while l <= L
-    disp(l)
-    radius_temp = randraw('pareto', [r_min,6],1); % power law random number
+    radius_temp = randraw('pareto', [r_min,1],1); % power law random number
     if radius_temp <= r_max
         radius(l) = radius_temp;
         l = l + 1;
     end
 end
+radius =radius * 50 / (2*pi);
 % sort the array in a descend way, facilitating determining the locations
 radius = sort(radius,'descend'); 
 figure
 plot(radius,'bo')
 box on
 set(gca,'fontsize',12)
-title('Radius')
+title('Radius (non-dim)')
 xlabel('Floe #')
 % determining the floe locations
 Location = zeros(2,L);
@@ -48,7 +48,7 @@ for l = 2:L
 end
 
 % floe thickness
-thickness = 0.5*rand(1,L)*0 + 1; thickness = round(round(thickness * 100) / 100 / 2 / pi * 50);
+thickness = 0.5*rand(1,L)*0 + 1; thickness = round(thickness * 100) / 100;
 
 % plotting the floes
 figure 
@@ -66,4 +66,4 @@ box on
 xlabel('x')
 ylabel('y')
 set(gca,'fontsize',12)
-title('Floe locations')
+title('Floe locations (dim)')
