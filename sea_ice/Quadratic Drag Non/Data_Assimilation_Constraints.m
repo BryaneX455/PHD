@@ -29,6 +29,7 @@ gamma_cov0 = eye(Dim_Y)*0.01;
 gamma_mean_trace(:,1) = gamma_mean0;
 gamma_cov_trace(:,1) = diag(gamma_cov0);
 
+
 % data assimilation
 for i = 2:N
     if mod(i,1000) == 0
@@ -37,16 +38,13 @@ for i = 2:N
     % observational operator 
     x_loc = [x(:,i-1),y(:,i-1)];
     
-
-    G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
-    G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * rk(1,:)));
-    G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
-
-    
-    
-     % tracers; need to consider the cases near the boundaries 
-    diff_x1 = x(:,i) - x(:,i-1); diff_x2 = x(:,i) - x(:,i-1) + 50.0; diff_x3 = x(:,i) - x(:,i-1) - 50.0;  
-    diff_y1 = y(:,i) - y(:,i-1); diff_y2 = y(:,i) - y(:,i-1) + 50.0; diff_y3 = y(:,i) - y(:,i-1) - 50.0;  
+    G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
+    G2 = (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(1,:))); % Fourier bases for u
+    G3 = (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
+    % computing the difference between the locations in the Lagrangian
+    % tracers; need to consider the cases near the boundaries 
+    diff_x1 = x(:,i) - x(:,i-1); diff_x2 = x(:,i) - x(:,i-1) + 2*pi; diff_x3 = x(:,i) - x(:,i-1) - 2*pi;  
+    diff_y1 = y(:,i) - y(:,i-1); diff_y2 = y(:,i) - y(:,i-1) + 2*pi; diff_y3 = y(:,i) - y(:,i-1) - 2*pi;  
     diff_xtemp = min(abs(diff_x1), abs(diff_x2)); diff_x_index = min(abs(diff_x3), diff_xtemp);
     diff_ytemp = min(abs(diff_y1), abs(diff_y2)); diff_y_index = min(abs(diff_y3), diff_ytemp);
     diff_x1_index = (diff_x_index == abs(diff_x1)); diff_x2_index = (diff_x_index == abs(diff_x2)); diff_x3_index = (diff_x_index == abs(diff_x3)); 
@@ -54,18 +52,14 @@ for i = 2:N
     diff_x = diff_x1 .* diff_x1_index + diff_x2 .* diff_x2_index + diff_x3 .* diff_x3_index;
     diff_y = diff_y1 .* diff_y1_index + diff_y2 .* diff_y2_index + diff_y3 .* diff_y3_index;
     diff_xy = [diff_x; diff_y];
- 
-   
-  
     
-
     % matrix a0
     F_u = zeros(Dim_U, 1);
     t = i*dt;
-    F_u(1:2:end-3) =0; 0.4 + 0.4*1i;%f_amp * exp(1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
-    F_u(2:2:end-2) =0; 0.4 - 0.4*1i;%f_amp * exp(- 1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
-    F_u(end-1) = 0;f_amp * cos(f_phase * t) + f_x_b;0;
-    F_u(end) = 0;f_amp * sin(f_phase * t) + f_y_b; 0;   
+    F_u(1:2:end-3) =0; %0.4+0.4*1i; %f_amp * exp(1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
+    F_u(2:2:end-2) =0; %0.4-0.4*1i; %f_amp * exp(- 1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
+    F_u(end-1) = 0;%f_amp * cos(f_phase * t) + f_x_b;0;
+    F_u(end) = 0;%f_amp * sin(f_phase * t) + f_y_b; 0;   
     
     a0 = [0*ones(36,1); 
           0*ones(36,1); 
@@ -203,12 +197,12 @@ for i = 1:3
             hold on
             plot(dt:dt:N*dt, v_total_x(j,:), 'b', 'linewidth',2)
             plot(dt:dt:N*dt, gamma_mean_trace(j,:), 'r', 'linewidth',2)
-            title(['Floe # ', num2str(j),' trans velocity in x'],'fontsize',14)
+            title(['Floe # ', num2str(j),' translational velocity in x'],'fontsize',14)
         elseif i == 2
             hold on
             plot(dt:dt:N*dt, v_total_y(j,:), 'b', 'linewidth',2)
             plot(dt:dt:N*dt, gamma_mean_trace(L+j,:), 'r', 'linewidth',2)
-            title(['Floe # ', num2str(j),' trans velocity in y'],'fontsize',14)
+            title(['Floe # ', num2str(j),' translational velocity in y'],'fontsize',14)
         elseif i == 3
             hold on
             plot(dt:dt:N*dt, omega(j,:), 'b', 'linewidth',2)

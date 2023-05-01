@@ -41,20 +41,21 @@ for i = 2:N
     x_loc = [x(:,i-1),y(:,i-1)];
     
     % Euler Maruyama
-    x(:,i) = x(:,i-1) + (vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in x
-    y(:,i) = y(:,i-1) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
+    x(:,i) = real(x(:,i-1)) + (vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in x
+    y(:,i) = real(y(:,i-1)) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
     
     % Question: why the different velocity scales?
-    vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt;
-    vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt;
+    vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt);
+    vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt);
    
     % rotation
-    t_o = beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) );  
+    t_o = real(beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ));  
+    
     save_rotation_force(:,i-1) = 1./I .* (t_o);
-    omega(:,i) = omega(:,i-1) + save_rotation_force(:,i-1) * dt;
+    omega(:,i) = real(omega(:,i-1) + save_rotation_force(:,i-1) * dt);
     % Periodic boundary conditions
-    x(:,i) = mod(x(:,i),50.0);
-    y(:,i) = mod(y(:,i),50.0);
+    x(:,i) = mod(real(x(:,i)),50);
+    y(:,i) = mod(real(y(:,i)),50);
 % pause
 end
 v_total_x = vo_x;

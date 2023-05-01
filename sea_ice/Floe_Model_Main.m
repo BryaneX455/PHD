@@ -57,8 +57,8 @@ for i = 2:N
     end
     x_loc = [x(:,i-1),y(:,i-1)];
 
-    x(:,i) = x(:,i-1) + (vc_x(:,i-1) + vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in x
-    y(:,i) = y(:,i-1) + (vc_y(:,i-1) + vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
+    x(:,i) = real(x(:,i-1) + (vc_x(:,i-1) + vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1)); % floe equation in x
+    y(:,i) = real(y(:,i-1) + (vc_y(:,i-1) + vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1)); % floe equation in y
     
     vo_x(:,i) = vo_x(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vc_x(:,i-1) - vo_x(:,i-1)) * dt; % velocity induced by the ocean velocity in u
     vo_y(:,i) = vo_y(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vc_y(:,i-1) - vo_y(:,i-1)) * dt; % velocity induced by the ocean velocity in v
@@ -151,6 +151,7 @@ for i = 2:N
     tangential_force_max = min(tangential_force_temp, abs(tangential_force));
     
     tangential_force = ((tangential_force_max == tangential_force_temp) .* tangential_force_temp .* ones(L) + (tangential_force_max == abs(tangential_force)) .* abs(tangential_force) .* ones(L) ).*sign(tangential_force);
+    
     tangential_force_x = Glj .* thickness_min .* transverse_area .* tangential_force .* tangential_direction_x;
     tangential_force_y = Glj .* thickness_min .* transverse_area .* tangential_force .* tangential_direction_y;
     
@@ -169,7 +170,7 @@ for i = 2:N
 % t_o
 %     pause
 
-    save_rotation_force(:,i-1) = 1./I .* (t_o);% ( sum( (ones(L,1) * radius)' .* (normal_direction_x .* tangential_force_y - normal_direction_y .* tangential_force_x))'  + t_o );
+    save_rotation_force(:,i-1) = 1./I .* ( sum( (ones(L,1) * radius)' .* (normal_direction_x .* tangential_force_y - normal_direction_y .* tangential_force_x))'  + t_o );
     omega(:,i) = omega(:,i-1) + save_rotation_force(:,i-1) * dt;
     % Periodic boundary conditions
     x(:,i) = mod(x(:,i),2*pi);

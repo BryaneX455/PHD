@@ -2,21 +2,18 @@
 %% EM Algorithm Prelim
 
 % initial guess of parameters
-Thic_Est = 3.*thickness;
+Thic_Est = 3.*thickness_in_km;
 n1 = length(Thic_Est);
 KK = 50;
 Param_save = zeros(n1,KK);
 Param_save(:,1) = Thic_Est;
-Param_truth = thickness;
+Param_truth = thickness_in_km;
 
-% dimension of the underlying flow field
-Dim_U = length(u_hat(:,1));
+%% Data Assimilation Prelim
+% dimension of the underlying flow field; unobserved variables v_c, v_o and
+% u_hat; observed variables [x; y]
+Dim_U = length(u_hat(:,1));Dim_Y = 3*L + Dim_U;Dim_X = 2*L;
 
-% dimension of the unobserved variables v_c, v_o and u_hat
-Dim_Y = 3*L + Dim_U;
-
-% dimension of the observed variables [x; y]
-Dim_X = 2*L;
 
 % define constant matrices in data assimilation
 invBoB = 1 / sigma_x / sigma_x * eye(2*L); % inverse of the square of the observational noise
@@ -26,82 +23,129 @@ b1 = [zeros(3*L, 3*L),zeros(3*L, Dim_U);% the noise matrix in the unobserved pro
 
 A1 = eye(2*L, 3*L + Dim_U); % matrix A1 in the observed processes
 A0 = zeros(2*L,1); % vector A0 in the observed processes
-thickness_min = min(ones(L,1) * thickness, thickness' * ones(1,L));
-% save the posterior mean and posterior covariance
-gamma_mean_trace = zeros(Dim_Y,N); % posterior mean vector
-gamma_cov_trace = zeros(Dim_Y,N); % only same the **diagonal entries** in the posterior covariance matrix
-gamma_cov_save = zeros(6,N);
-% initial value (can be arbitary)
-gamma_mean0 = zeros(Dim_Y,1);
-gamma_cov0 = eye(Dim_Y)*0.01; 
-
-gamma_mean_trace(:,1) = gamma_mean0;
-gamma_cov_trace(:,1) = diag(gamma_cov0);
-
-%% EM Alg Starts
-
-% data assimilation
-for i = 2:N
-    if mod(i,1000) == 0
-        disp(i*dt)
+%% EM Alg
+for k = 2:KK
+    % nonlinear smoothing 
+    gamma_mean_trace = zeros(Dim_Y,N); % posterior mean vector
+    gamma_cov_trace = zeros(Dim_Y,N); % only same the **diagonal entries** in the posterior covariance matrix
+    gamma_cov_save = zeros(6,N);
+    mu_s = zeros(Dim_Y,N); % smoothing mean
+    R_s = zeros(Dim_Y,N); % smoothing variance
+    C = zeros(Dim_Y,N); % auxiliary matrix in smoothing
+    % initial value (can be arbitary)
+    gamma_mean0 = zeros(Dim_Y,1);
+    gamma_cov0 = eye(Dim_Y)*0.01;
+    gamma_mean_trace(:,1) = gamma_mean0;
+    gamma_cov_trace(:,1) = diag(gamma_cov0);
+    
+    % Filtering
+    for i = 2:N
+        if mod(i,1000) == 0
+            disp(i*dt)
+        end
+        % observational operator 
+        x_loc = [x(:,i-1),y(:,i-1)];
+        
+    
+        G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
+        G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * rk(1,:)));
+        G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
+    
+        
+        
+         % tracers; need to consider the cases near the boundaries 
+        diff_x1 = x(:,i) - x(:,i-1); diff_x2 = x(:,i) - x(:,i-1) + 50.0; diff_x3 = x(:,i) - x(:,i-1) - 50.0;  
+        diff_y1 = y(:,i) - y(:,i-1); diff_y2 = y(:,i) - y(:,i-1) + 50.0; diff_y3 = y(:,i) - y(:,i-1) - 50.0;  
+        diff_xtemp = min(abs(diff_x1), abs(diff_x2)); diff_x_index = min(abs(diff_x3), diff_xtemp);
+        diff_ytemp = min(abs(diff_y1), abs(diff_y2)); diff_y_index = min(abs(diff_y3), diff_ytemp);
+        diff_x1_index = (diff_x_index == abs(diff_x1)); diff_x2_index = (diff_x_index == abs(diff_x2)); diff_x3_index = (diff_x_index == abs(diff_x3)); 
+        diff_y1_index = (diff_y_index == abs(diff_y1)); diff_y2_index = (diff_y_index == abs(diff_y2)); diff_y3_index = (diff_y_index == abs(diff_y3)); 
+        diff_x = diff_x1 .* diff_x1_index + diff_x2 .* diff_x2_index + diff_x3 .* diff_x3_index;
+        diff_y = diff_y1 .* diff_y1_index + diff_y2 .* diff_y2_index + diff_y3 .* diff_y3_index;
+        diff_xy = [diff_x; diff_y];
+     
+       
+      
+        
+    
+        % matrix a0, all zeros in our case
+        F_u = zeros(Dim_U, 1);
+        t = i*dt;
+        F_u(1:2:end-3) = 0; 
+        F_u(2:2:end-2) = 0; 
+        F_u(end-1) = 0;
+        F_u(end) = 0; 
+        
+        a0 = [0*ones(36,1); 
+              0*ones(36,1); 
+              0*ones(36,1); 
+              F_u];
+        
+        % matrix a1
+        a1 = [zeros(L,L)*1, zeros(L, L)*1, zeros(L, L)*1, G2;
+              zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G3;
+              zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G1;
+             zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u];
+        
+        % run the data assimilation for posterior mean and posterior covariance
+        gamma_mean = gamma_mean0 + (a0 + a1 * gamma_mean0) * dt + (gamma_cov0 * A1') * invBoB * (diff_xy - A0 * dt - A1 * gamma_mean0 * dt);
+        gamma_cov = gamma_cov0 + (a1 * gamma_cov0 + gamma_cov0 * a1' + b1 * b1' - (gamma_cov0 * A1') * invBoB * (gamma_cov0 * A1')') * dt;     
+    
+        % save the posterior statistics
+        gamma_mean_trace(:,i) = gamma_mean;
+        gamma_cov_trace(:,i) = diag(gamma_cov);
+    
+        % update
+        gamma_mean0 = gamma_mean;
+        gamma_cov0 = gamma_cov;
     end
-    % observational operator 
-    x_loc = [x(:,i-1),y(:,i-1)];
-    
 
-    G1 = (beta_l./ I  * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:))))/2; % Fourier bases for ocean induced rotation
-    G2 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * rk(1,:)));
-    G3 = 8.64*(alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk / 50.0 * 2 * pi) .* (ones(L,1) * rk(2,:))); % Fourier bases for v
 
-    
-    
-     % tracers; need to consider the cases near the boundaries 
-    diff_x1 = x(:,i) - x(:,i-1); diff_x2 = x(:,i) - x(:,i-1) + 50.0; diff_x3 = x(:,i) - x(:,i-1) - 50.0;  
-    diff_y1 = y(:,i) - y(:,i-1); diff_y2 = y(:,i) - y(:,i-1) + 50.0; diff_y3 = y(:,i) - y(:,i-1) - 50.0;  
-    diff_xtemp = min(abs(diff_x1), abs(diff_x2)); diff_x_index = min(abs(diff_x3), diff_xtemp);
-    diff_ytemp = min(abs(diff_y1), abs(diff_y2)); diff_y_index = min(abs(diff_y3), diff_ytemp);
-    diff_x1_index = (diff_x_index == abs(diff_x1)); diff_x2_index = (diff_x_index == abs(diff_x2)); diff_x3_index = (diff_x_index == abs(diff_x3)); 
-    diff_y1_index = (diff_y_index == abs(diff_y1)); diff_y2_index = (diff_y_index == abs(diff_y2)); diff_y3_index = (diff_y_index == abs(diff_y3)); 
-    diff_x = diff_x1 .* diff_x1_index + diff_x2 .* diff_x2_index + diff_x3 .* diff_x3_index;
-    diff_y = diff_y1 .* diff_y1_index + diff_y2 .* diff_y2_index + diff_y3 .* diff_y3_index;
-    diff_xy = [diff_x; diff_y];
- 
-   
-  
-    
+    % Smoothing
+    mu_s(:,end) = gamma_mean; % the starting point is the final value of the filtering
+    R_s(:,end) = diag(gamma_cov);
+    for i = N-1:-1:1
+        % matrices and vectors needed in smoothing
+        mu_s(:,i) = mu_s(:,i+1) + (- a0 - a1 * mu_s(:,i+1) + b1 * b1' * inv(diag(gamma_cov_trace(:,i+1)))*(gamma_mean_trace(:,i+1) - mu_s(:,i+1)))*dt; % smoothing mean
+        R_s(i) = R_s(:,i+1) - dt*( (a1 + b1 * b1' * inv(diag(gamma_cov_trace(:,i+1))))*R_s(:,i+1) + R_s(:,i+1)*(a1' + b1 * b1' * inv(diag(gamma_cov_trace(:,i+1)))) - b1*b1' ); % smoothing variance
+    end
+    if k == 2
+        mu_s_2 = mu_s;
+        R_s_2 = R_s;
+    end
+    if k == 5
+        mu_s_5 = mu_s;
+        R_s_5 = R_s;
+    end
+    MRM = zeros(n1,n1);
+    MRZ = zeros(n1,1);
 
-    % matrix a0
-    F_u = zeros(Dim_U, 1);
-    t = i*dt;
-    F_u(1:2:end-3) =0; 0.4 + 0.4*1i;%f_amp * exp(1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
-    F_u(2:2:end-2) =0; 0.4 - 0.4*1i;%f_amp * exp(- 1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
-    F_u(end-1) = 0;f_amp * cos(f_phase * t) + f_x_b;0;
-    F_u(end) = 0;f_amp * sin(f_phase * t) + f_y_b; 0;   
-    
-    a0 = [0*ones(36,1); 
-          0*ones(36,1); 
-          0*ones(36,1); 
-          F_u];
-    
-    % matrix a1
-    a1 = [zeros(L,L)*1, zeros(L, L)*1, zeros(L, L)*1, G2;
-          zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G3;
-          zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G1;
-         zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u];
-    
-    % run the data assimilation for posterior mean and posterior covariance
-    gamma_mean = gamma_mean0 + (a0 + a1 * gamma_mean0) * dt + (gamma_cov0 * A1') * invBoB * (diff_xy - A0 * dt - A1 * gamma_mean0 * dt);
-    gamma_cov = gamma_cov0 + (a1 * gamma_cov0 + gamma_cov0 * a1' + b1 * b1' - (gamma_cov0 * A1') * invBoB * (gamma_cov0 * A1')') * dt;     
-
-    % save the posterior statistics
-    gamma_mean_trace(:,i) = gamma_mean;
-    gamma_cov_trace(:,i) = diag(gamma_cov);
-
-    % update
-    gamma_mean0 = gamma_mean;
-    gamma_cov0 = gamma_cov;
+    % M step
+    for i = 1+10:N-1-10
+        X = mu_s(:,i);
+        XX = mu_s(:,i)^2 + R_s(i);
+        XXj = mu_s(i) * mu_s(i+1) + R_s(i+1) * C(i)';
+        
+        MRM_temp = [1/sigma_y^2, - X * z_truth(i)/sigma_y^2, 0, 0;
+            -X* z_truth(i)/sigma_y^2, XX * z_truth(i)^2/sigma_y^2 + XX * y_truth(i)^2/sigma_z^2, 0, 0;
+            0, 0, XX/sigma_x^2, -X/sigma_x^2;
+            0, 0, -X /sigma_x^2, 1/sigma_x^2] * dt^2;
+        MRZ_temp = [(y_truth(i+1) - y_truth(i) -  (X * y_truth(i) - y_truth(i)) * dt)/ sigma_y^2;
+                    - X * (z_truth(i)/sigma_y^2 * (y_truth(i+1) - y_truth(i) + y_truth(i) * dt)) ...
+                    + X * (y_truth(i)/sigma_z^2 * (z_truth(i+1) - z_truth(i) + z_truth(i) * dt)) ...
+                    + y_truth(i) * z_truth(i)/sigma_y^2 * dt * XX - y_truth(i) * z_truth(i)/sigma_z^2 * dt * XX;
+                    -XXj/sigma_x^2 + XX/sigma_x^2 - (y_truth(i)^2 + z_truth(i)^2) /sigma_x^2 * X * dt;
+                    (mu_s(i+1) - X + (y_truth(i)^2 + z_truth(i)^2) * dt)/sigma_x^2]*dt; 
+                    
+        
+        MRM = MRM + MRM_temp;
+        MRZ = MRZ + MRZ_temp;
+    end
+    Theta = MRM \ MRZ; % quadratic optimization
 end
 
+%% Showing results
+% error assignment
 RMSE = zeros(1,Dim_U-2);
 PC = zeros(1,Dim_U-2);
 for i = 1:Dim_U-2
@@ -126,7 +170,7 @@ for i = 1:L
     corrtemp = corrcoef(real(omega(i,:)),real(gamma_mean_trace(2*L+i,:)));
     PC2(2*L+i) = corrtemp(1,2);
 end
-
+% plots
 figure
 subplot(2,2,1)
 plot(RMSE,'b')

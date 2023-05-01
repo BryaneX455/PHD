@@ -1,4 +1,3 @@
-clear all; close all;
 % Generate the initial floes, including the locations and radii
 rng(100)
 L = 36;36;24;48;2; % total number of the floes
@@ -14,7 +13,7 @@ while l <= L
         l = l + 1;
     end
 end
-radius = ones(1,L)*0.3+0.3*rand(1,L);
+radius = ones(1,L)*0.3+0.3*rand(1,L);0.5;
 % sort the array in a descend way, facilitating determining the locations
 radius = sort(radius,'descend'); 
 figure

@@ -1,12 +1,6 @@
 % 2D shallow water equation
-%% Modes Definition
-%%%Gravity modes: Gravity waves are generated when a fluid is displaced from its equilibrium position, and gravity or buoyancy acts as the restoring force. 
-%%%Geostrophic balance (GB) modes: Geostrophic balance occurs when the pressure gradient force is balanced by the Coriolis force in a fluid flow, 
-%%%resulting in a steady flow pattern with no oscillatory behavior.
-%%%In this case, the dispersion relation is given by ω = 0, which means there is no time dependence, and the flow remains steady over time.
-%%
 K_max = 2; % the range of Fourier modes is [-K_max, K_max]^2
-k = zeros(2, (2 * K_max + 1) * (2 * K_max + 1)); % Total number of Fourier wavenumbers, p1 is because of zero
+k = zeros(2, (2 * K_max + 1) * (2 * K_max + 1)); % Total number of Fourier wavenumbers
 
 % arranging Fourier wavenumbers
 % arranging in such a way that the complex conjugates modes are next to
@@ -44,7 +38,7 @@ set(gca, 'fontsize', 12)
 title('Fourier wavenumbers', 'fontsize', 14)
 xlabel('k_1')
 ylabel('k_2')
-%%
+
 % Total number of Fourier modes is 3 times as many as that of the Fourier
 % wavenumbers because each Fourier wavenumber has three modes: one GB mode
 % that is incompressible and two gravity modes that are compressible
@@ -53,12 +47,10 @@ kk = [k,k,kk_end,k,kk_end]; % total number of the waves, 2k gravity, k-1 GB and 
 kk(:,length(k(1,:))) = []; % putting the two +/-(0,0) modes of the gravity waves together
 epsilon = 0.2; % Rossby number
 % dispersion relationship for the two gravity modes, p and m stand for plus and minus
-% the dispersion relationship for the GB mode is omega = 0 
-%%% omega = 0 means no time dependence on wave's behavior
+% the dispersion relationship for the GB mode is omega = 0
 omegak_p = 1/epsilon * sqrt(k(1,:).^2 + k(2,:).^2 + 1); 
 omegak_m = - 1/epsilon * sqrt(k(1,:).^2 + k(2,:).^2 + 1);
 omegak = reshape([omegak_p; omegak_m],1,[]);
-
 % eigenvectors of GB and gravity modes
 % the last column of rk2 and rk3 are the (0,0) gravity modes, which need to
 % deal with in a different way
@@ -72,6 +64,7 @@ rk2(:,end) = [1i;1]/sqrt(2);
 rk3 = -[1./sqrt(k(1,:).^2 + k(2,:).^2)/sqrt(2)./sqrt(k(1,:).^2 + k(2,:).^2 + 1) .* (1i * k(2,:) - k(1,:) .* sqrt(k(1,:).^2 + k(2,:).^2 + 1));
     1./sqrt(k(1,:).^2 + k(2,:).^2)/sqrt(2)./sqrt(k(1,:).^2 + k(2,:).^2 + 1) .* (-1i * k(1,:) - k(2,:) .* sqrt(k(1,:).^2 + k(2,:).^2 + 1))];
 rk3(:,end) = [-1i;1]/sqrt(2);
+
 rk = zeros(size(kk));
 rk(:, 1:2:length(k(1,:))*2-1) = rk2;
 rk(:, 2:2:length(k(1,:))*2) = rk3;
@@ -94,8 +87,8 @@ d_g = 0.5; % damping of the gravity modes
 sigma_B = 0.4; % noise of the GB modes
 sigma_g = 0.4; % noise of the gravity modes
 f_amp = 1.6; % large-scale forcing amplitude
-f_phase = 14; % large-scale forcing period
-f_x_b = 0.5;  % large-scale forcing background in x direction
+f_phase = 1.5; % large-scale forcing period
+f_x_b = 0.5; % large-scale forcing background in x direction
 f_y_b = 0;% large-scale forcing background in y direction
 % b1: noise coefficient; a1: damping and phase 
 b1 = zeros(Dim_U, Dim_U);
@@ -121,8 +114,8 @@ rd(1:end-2, :) = randn(Dim_Ug * 2 + Dim_UB, N);
 a0 = zeros(Dim_U, 1);
 for i = 2:N
     t = i*dt;
-    a0(1:2:end-3) =0; 
-    a0(2:2:end-2) =0; 
+    a0(1:2:end-3) =0;
+    a0(2:2:end-2) =0;
     a0(end-1) = 0;
     a0(end) = 0; 
     u_hat(:,i) = u_hat(:,i-1) + (L_u * u_hat(:,i-1) + a0) * dt + Sigma_u * sqrt(dt) * rd(:, i);
@@ -130,18 +123,17 @@ end
 
 % reconstruction
 Dim_Grid = 50;
-[xx,yy] = meshgrid(linspace(-25,25,Dim_Grid), linspace(-25,25,Dim_Grid));
+[xx,yy] = meshgrid(linspace(-pi,pi,Dim_Grid), linspace(-pi,pi,Dim_Grid));
 x_vec = [reshape(xx,[],1), reshape(yy,[],1)]; 
-figure 
-hold on
+figure(3) 
 for i = 2:2:round(T/dt/100)
-    u = exp(1i * x_vec * (2*pi) / 50 * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:))) * 50 / (2*pi);
-    v = exp(1i * x_vec * (2*pi) / 50 * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:))) * 50 / (2*pi);
+    u = exp(1i * x_vec * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)));
+    v = exp(1i * x_vec * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)));
     u = reshape(u, Dim_Grid, Dim_Grid);
     v = reshape(v, Dim_Grid, Dim_Grid);
     quiver(xx, yy, u, v, 'linewidth',1)
-    xlim([-25, 25 ])
-    ylim([-25, 25 ])
+    xlim([-pi, pi])
+    ylim([-pi, pi])
     box on    
     title(['t = ', num2str(dt*100*(i-1))])
     pause(0.1);

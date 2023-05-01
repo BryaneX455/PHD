@@ -21,7 +21,7 @@ thickness_min = min(ones(L,1) * thickness, thickness' * ones(1,L));
 m = pi * (radius').^2 .* h;     m_truth = m;
 
 % ocean drag coefficient, density, portion inside ocean
-d_o = 1; rho_o = 1; c_o = 0.9;
+d_o = 5.5e-3; rho_o = 1; c_o = 0.9;
 alpha_l = d_o * rho_o * pi * radius'.^2;
 alpha_L = diag([alpha_l;alpha_l]);
 % moment of inertia
@@ -40,8 +40,8 @@ for i = 2:N
     x(:,i) = real(x(:,i-1) + vo_x(:,i-1) * dt + sqrt(dt) * sigma_x * randn(L,1)); % floe equation in x
     y(:,i) = real(y(:,i-1) + vo_y(:,i-1) * dt + sqrt(dt) * sigma_x * randn(L,1)); % floe equation in y
     
-    vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * dt); % velocity induced by the ocean velocity in u
-    vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * dt); % velocity induced by the ocean velocity in v
+    vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * norm(exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1),2) * dt); % velocity induced by the ocean velocity in u
+    vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * norm(exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1),2) * dt); % velocity induced by the ocean velocity in v
     
     u_save(:,i) = exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(1,:)));
     v_save(:,i) = exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(2,:)));

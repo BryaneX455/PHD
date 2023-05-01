@@ -1,4 +1,4 @@
-% Floe model data assimilation
+f% Floe model data assimilation
 
 % dimension of the underlying flow field
 Dim_U = length(u_hat(:,1));
@@ -123,7 +123,7 @@ for i = 2:N
     tangential_direction_y = - normal_direction_x;
 %     transverse_area = 1 ./ (distance + eps * eye(L)) .* sqrt(4 * distance.^2 .* radius_max.^2 - (distance.^2 - radius_min.^2 + radius_max.^2).^2) .* distance_selected;
     
-    % compute the tangential force due to the constraints
+    % compute the tangential force due to the contraints
     % the true velocity and angular velocity are both unknown. the filtered
     % mean values are used in the estimation here
     v_diff_x = + real( gamma_mean_trace(1:L,i-1) * ones(1,L) - ones(L,1) * gamma_mean_trace(1:L,i-1)' );
@@ -212,21 +212,29 @@ for i = 2:N
     F_u(end-1) = 0;f_amp * cos(f_phase * t) + f_x_b;0;
     F_u(end) = 0;f_amp * sin(f_phase * t) + f_y_b; 0;   
     
-    a0 = [0*(1./m .* sum(normal_force_x)' + 1./m .* sum(tangential_force_x_1)'); 
-          0*(1./m .* sum(normal_force_y)' + 1./m .* sum(tangential_force_y_1)'); 
-          0*rotation_force_a0_part; 
+    a0 = [1./m .* sum(normal_force_x)' + 1./m .* sum(tangential_force_x_1)'; 
+          1./m .* sum(normal_force_y)' + 1./m .* sum(tangential_force_y_1)'; 
+          rotation_force_a0_part; 
           F_u];
     
     % matrix a1
-    a1 = [a1_11*0, a1_12*0, a1_13*0, G2;
-          a1_21*0, a1_22*0, a1_23*0, G3;
-          a1_31*0, a1_32*0, a1_33*0, G1;
+    a1 = [a1_11, a1_12, a1_13, G2;
+          a1_21, a1_22, a1_23, G3;
+          a1_31, a1_32, a1_33, G1;
          zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u];
     
     % run the data assimilation for posterior mean and posterior covariance
-    gamma_mean = gamma_mean0 + (a0 + a1 * gamma_mean0) * dt + (gamma_cov0 * A1') * invBoB * (diff_xy - A0 * dt - A1 * gamma_mean0 * dt);
+    gamma_mean = gamma_mean0 + (a0 + a1 * gamma_mean0) * dt + (gamma_cov0 * A1') * invBoB * (diff_xy - A0*dt-A1 * gamma_mean0 * dt);
     gamma_cov = gamma_cov0 + (a1 * gamma_cov0 + gamma_cov0 * a1' + b1 * b1' - (gamma_cov0 * A1') * invBoB * (gamma_cov0 * A1')') * dt;     
-
+%     gamma_mean(1:3*L) = real(gamma_mean(1:3*L));
+% gamma_mean(1:12) 
+% pause
+% gamma_cov_save(1,i) = gamma_cov(1,241);
+% gamma_cov_save(2,i) = gamma_cov(1,259);
+% gamma_cov_save(3,i) = gamma_cov(2,241);
+% gamma_cov_save(4,i) = gamma_cov(2,259);
+% gamma_cov_save(5,i) = gamma_cov(2*L+1,241);
+% gamma_cov_save(6,i) = gamma_cov(2*L+1,259);
     % save the posterior statistics
     gamma_mean_trace(:,i) = gamma_mean;
     gamma_cov_trace(:,i) = diag(gamma_cov);
@@ -323,12 +331,12 @@ for i = 1:3
             hold on
             plot(dt:dt:N*dt, v_total_x(j,:), 'b', 'linewidth',2)
             plot(dt:dt:N*dt, gamma_mean_trace(j,:), 'r', 'linewidth',2)
-            title(['Floe # ', num2str(j),' trans velocity in x'],'fontsize',14)
+            title(['Floe # ', num2str(j),' translational velocity in x'],'fontsize',14)
         elseif i == 2
             hold on
             plot(dt:dt:N*dt, v_total_y(j,:), 'b', 'linewidth',2)
             plot(dt:dt:N*dt, gamma_mean_trace(L+j,:), 'r', 'linewidth',2)
-            title(['Floe # ', num2str(j),' trans velocity in y'],'fontsize',14)
+            title(['Floe # ', num2str(j),' translational velocity in y'],'fontsize',14)
         elseif i == 3
             hold on
             plot(dt:dt:N*dt, omega(j,:), 'b', 'linewidth',2)
