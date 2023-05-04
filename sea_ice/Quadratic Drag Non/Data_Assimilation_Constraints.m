@@ -56,10 +56,10 @@ for i = 2:N
     % matrix a0
     F_u = zeros(Dim_U, 1);
     t = i*dt;
-    F_u(1:2:end-3) =0; %0.4+0.4*1i; %f_amp * exp(1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
-    F_u(2:2:end-2) =0; %0.4-0.4*1i; %f_amp * exp(- 1i * f_phase * t) * ones(Dim_Ug + Dim_UB/2, 1);
-    F_u(end-1) = 0;%f_amp * cos(f_phase * t) + f_x_b;0;
-    F_u(end) = 0;%f_amp * sin(f_phase * t) + f_y_b; 0;   
+    F_u(1:2:end-3) =0; 
+    F_u(2:2:end-2) =0; 
+    F_u(end-1) = 0;
+    F_u(end) = 0; 
     
     a0 = [0*ones(36,1); 
           0*ones(36,1); 

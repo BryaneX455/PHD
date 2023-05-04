@@ -43,11 +43,17 @@ for i = 2:N
     vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * norm(exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1),2) * dt); % velocity induced by the ocean velocity in u
     vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * norm(exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1),2) * dt); % velocity induced by the ocean velocity in v
     
+%     vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,N-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * norm(exp(1i * x_loc * kk) * (u_hat(:,N-1) .* transpose(rk(1,:)))  - vo_x(:,i-1),2) * dt); % velocity induced by the ocean velocity in u
+%     vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,N-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * norm(exp(1i * x_loc * kk) * (u_hat(:,N-1) .* transpose(rk(2,:)))  - vo_y(:,i-1),2) * dt); % velocity induced by the ocean velocity in v
+    
+%     vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,N-1) .* transpose(rk(1,:)))  - vo_x(:,i-1))* dt); % velocity induced by the ocean velocity in u
+%     vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_hat(:,N-1) .* transpose(rk(2,:)))  - vo_y(:,i-1))* dt); % velocity induced by the ocean velocity in v
+    
     u_save(:,i) = exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(1,:)));
     v_save(:,i) = exp(1i * x_loc * kk) * (u_hat(:,i-1) .* transpose(rk(2,:)));
     
     % rotation
-    t_o = real(beta_l .* ( exp(1i * x_loc * kk) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ));
+    t_o = real(beta_l .* ( exp(1i * x_loc * kk) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ) * norm(exp(1i * x_loc * kk) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1),2));
     save_rotation_force(:,i-1) = 1./I .* (t_o);
     omega(:,i) = real(omega(:,i-1) + save_rotation_force(:,i-1) * dt);
     % Periodic boundary conditions
@@ -80,6 +86,10 @@ for i = 1:100
     title(['t = ', num2str(dt*100*(i-1))])
     u = exp(1i * x_vec * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)));
     v = exp(1i * x_vec * kk) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)));
+    
+%     u = exp(1i * x_vec * kk) * (u_hat(:,N-1) .* transpose(rk(1,:)));
+%     v = exp(1i * x_vec * kk) * (u_hat(:,N-1) .* transpose(rk(2,:)));
+    
     u = reshape(u, Dim_Grid, Dim_Grid);
     v = reshape(v, Dim_Grid, Dim_Grid);
     quiver(xx, yy, u, v, 'linewidth',1)
