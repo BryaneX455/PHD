@@ -69,7 +69,13 @@ for i = 2:N
     B22 = - 2 * alpha_l ./ m .* abs( exp(1i * x_loc * kk) * (u_ocn_yf)  - vo_y(:,i-1)) ;
     B33 = - 2 * beta_l ./ I .* abs( exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf );
     B = diag([B11;B22;B33]);
-    B14 = 
+    B14 = -B11 .* exp(1i * x_loc * kk);
+    B15 = -B22 .* exp(1i * x_loc * kk);
+    B16 = -B33 .* exp(1i * x_loc * kk);
+    Jac = [B11, zeros(L, L)*1, zeros(L, L)*1, B14;
+           zeros(L, L)*1, B22, zeros(L, L)*1, B15;
+           zeros(L, L)*1, zeros(L, L)*1, B33, B16;
+           zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u];
     
     
     F_u = zeros(Dim_U, 1);
@@ -85,11 +91,11 @@ for i = 2:N
           F_u];
     
     % matrix a1
-    a1 = [zeros(L,L)*1, zeros(L, L)*1, zeros(L, L)*1, G2;
-          zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G3;
-          zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G1;
-         zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u];
-    
+%     a1 = [zeros(L,L)*1, zeros(L, L)*1, zeros(L, L)*1, G2;
+%           zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G3;
+%           zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G1;
+%          zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u];
+    a1 = Jac;
     % run the data assimilation for posterior mean and posterior covariance
     gamma_mean = gamma_mean0 + (a0 + a1 * gamma_mean0) * dt + (gamma_cov0 * A1') * invBoB * (diff_xy - A0 * dt - A1 * gamma_mean0 * dt);
     gamma_cov = gamma_cov0 + (a1 * gamma_cov0 + gamma_cov0 * a1' + b1 * b1' - (gamma_cov0 * A1') * invBoB * (gamma_cov0 * A1')') * dt;     
