@@ -54,16 +54,34 @@ for i = 2:N
     diff_xy = [diff_x; diff_y];
     
     % matrix a0
+    % Fmu part
+    u_ocn_xf = gamma_mean0(109:184,1).* transpose(rk(1,:));
+    u_ocn_yf = gamma_mean0(109:184,1).* transpose(rk(2,:));
+    vxf = gamma_mean0(1:36,1);
+    vyf = gamma_mean0(37:72,1);
+    omgf = gamma_mean0(73:108,1);
+    Fm2 = alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_ocn_xf)  - vo_x(:,i-1)) .* abs( exp(1i * x_loc * kk) * (u_ocn_xf)  - vo_x(:,i-1));
+    Fm3 = alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_ocn_yf)  - vo_y(:,i-1)) .* abs( exp(1i * x_loc * kk) * (u_ocn_yf)  - vo_y(:,i-1));
+    Fm1 = beta_l ./ I .* (exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf) .* abs(exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf);
+    
+    % Jacobian Nine Block Matrix
+    B11 = - 2 * alpha_l ./ m .* abs( exp(1i * x_loc * kk) * (u_ocn_xf)  - vo_x(:,i-1)) ;
+    B22 = - 2 * alpha_l ./ m .* abs( exp(1i * x_loc * kk) * (u_ocn_yf)  - vo_y(:,i-1)) ;
+    B33 = - 2 * beta_l ./ I .* abs( exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf );
+    B = diag([B11;B22;B33]);
+    B14 = 
+    
+    
     F_u = zeros(Dim_U, 1);
     t = i*dt;
-    F_u(1:2:end-3) =0; 
-    F_u(2:2:end-2) =0; 
+    F_u(1:2:end-3) = 0; 
+    F_u(2:2:end-2) = 0; 
     F_u(end-1) = 0;
     F_u(end) = 0; 
     
-    a0 = [0*ones(36,1); 
-          0*ones(36,1); 
-          0*ones(36,1); 
+    a0 = [Fm2; 
+          Fm3; 
+          Fm1; 
           F_u];
     
     % matrix a1
