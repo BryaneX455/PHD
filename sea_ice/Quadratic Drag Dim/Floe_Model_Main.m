@@ -23,7 +23,7 @@ m =  ice_density * pi * (radius').^2 .* thickness_in_km;
 m_truth = m;
 
 % ocean drag coefficient, density, portion inside ocean
-d_o = 5.5e-3; rho_o = 1e12; c_o = 0.9;
+d_o = 1; rho_o = 1e12; c_o = 0.9;
 
 alpha_l = d_o * rho_o * pi * (radius').^2 * 1e-3; % The 1e-3 comes from the compensation for the thickness of the floes
 alpha_L = diag([alpha_l;alpha_l]);
@@ -45,11 +45,17 @@ for i = 2:N
     y(:,i) = real(y(:,i-1)) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
     
     % Question: why the different velocity scales?
-    vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * norm((50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)),2) * dt);
-    vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * norm((50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)),2) * dt);
+%     vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * dt);
+%     vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * dt);
+    
+    vo_x(:,i) = real(vo_x(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * dt);
+    vo_y(:,i) = real(vo_y(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * dt);
+    
+%     vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt);
+%     vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt);
    
     % rotation
-    t_o = real(beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ));  
+    t_o = real(beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ).* abs(exp(1i * x_loc * kk / 50.0 *(2*pi)) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1)));  
     
     save_rotation_force(:,i-1) = 1./I .* (t_o);
     omega(:,i) = real(omega(:,i-1) + save_rotation_force(:,i-1) * dt);

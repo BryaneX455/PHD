@@ -73,9 +73,9 @@ for i = 2:N
           F_u];
     
     % matrix a1
-    a1 = [zeros(L,L)*1, zeros(L, L)*1, zeros(L, L)*1, G2;
-          zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G3;
-          zeros(L, L)*1, zeros(L, L)*1, zeros(L, L)*1, G1;
+    a1 = [-ones(L,L), zeros(L, L)*1, zeros(L, L)*1, G2;
+          zeros(L, L)*1, -ones(L,L), zeros(L, L)*1, G3;
+          zeros(L, L)*1, zeros(L, L)*1, -ones(L,L), G1;
          zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u];
     
     % run the data assimilation for posterior mean and posterior covariance

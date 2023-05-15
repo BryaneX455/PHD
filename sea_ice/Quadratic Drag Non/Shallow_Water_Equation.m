@@ -45,7 +45,7 @@ ylabel('k_2')
 kk_end = [0;0];
 kk = [k,k,kk_end,k,kk_end]; % total number of the waves, 2k gravity, k-1 GB and two background modes
 kk(:,length(k(1,:))) = []; % putting the two +/-(0,0) modes of the gravity waves together
-epsilon = 0.2; % Rossby number
+epsilon = 1; % Rossby number
 % dispersion relationship for the two gravity modes, p and m stand for plus and minus
 % the dispersion relationship for the GB mode is omega = 0
 omegak_p = 1/epsilon * sqrt(k(1,:).^2 + k(2,:).^2 + 1); 

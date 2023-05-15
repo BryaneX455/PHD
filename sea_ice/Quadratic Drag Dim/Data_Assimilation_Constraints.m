@@ -63,6 +63,7 @@ for i = 2:N
     Fm2 = alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_ocn_xf)  - vxf) .* abs( exp(1i * x_loc * kk) * (u_ocn_xf)  - vxf);
     Fm3 = alpha_l ./ m .* (exp(1i * x_loc * kk) * (u_ocn_yf)  - vyf) .* abs( exp(1i * x_loc * kk) * (u_ocn_yf)  - vyf);
     Fm1 = beta_l ./ I .* (exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf) .* abs(exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf);
+    Fm1 = zeros(36,1);
     % Jacobian Nine Block Matrix
     B11 = - 2 * alpha_l ./ m .* abs( exp(1i * x_loc * kk) * (u_ocn_xf)  - vxf) ;
     B22 = - 2 * alpha_l ./ m .* abs( exp(1i * x_loc * kk) * (u_ocn_yf)  - vyf) ;
@@ -70,7 +71,7 @@ for i = 2:N
     B = diag([B11;B22;B33]);
     B14 = -B11 .* exp(1i * x_loc * kk);
     B15 = -B22 .* exp(1i * x_loc * kk);
-    B16 = zeros(36,76); %-B33 .* exp(1i * x_loc * kk);
+    B16 = -B33 .* exp(1i * x_loc * kk);
     BR = [B14;B15;B16];
     Jac = [B,BR;
            zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u];
@@ -85,18 +86,14 @@ for i = 2:N
     
 %     a0 = [Fm2 - Jac(1:36, :) * gamma_mean0; 
 %           Fm3 - Jac(37:72, :) * gamma_mean0; 
-%           Fm1 - Jac(73:108, :) * gamma_mean0; 
-%           F_u];
-      
-    a0 = [Fm2 - Jac(1:36, :) * gamma_mean0; 
-          Fm3 - Jac(37:72, :) * gamma_mean0; 
-          Fm1; 
-          F_u];
-
-%     a0 = [Fm2; 
-%           Fm3; 
 %           Fm1; 
 %           F_u];
+%     
+
+    a0 = [Fm2; 
+          Fm3; 
+          Fm1; 
+          F_u];
       
     % matrix a1
 %     a1 = [zeros(L,L)*1, zeros(L, L)*1, zeros(L, L)*1, G2;
