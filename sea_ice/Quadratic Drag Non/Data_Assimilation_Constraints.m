@@ -88,8 +88,8 @@ for i = 2:N
 %           Fm1 - Jac(73:108, :) * gamma_mean0; 
 %           F_u];
       
-    a0 = [Fm2 - Jac(1:36, :) * gamma_mean0; 
-          Fm3 - Jac(37:72, :) * gamma_mean0; 
+    a0 = [Fm2 - Jac(1:36, 1:36) * gamma_mean0(1:36,1); 
+          Fm3 - Jac(37:72, 37:72) * gamma_mean0(37:72,1); 
           Fm1; 
           F_u];
 
