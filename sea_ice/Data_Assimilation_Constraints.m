@@ -1,4 +1,4 @@
-f% Floe model data assimilation
+% Floe model data assimilation
 
 % dimension of the underlying flow field
 Dim_U = length(u_hat(:,1));
