@@ -69,22 +69,19 @@ for i = 2:N
     Fm1 = beta_l ./ I .* (exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf) .* abs(exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf);
 
     % Jacobian 
-    B11 = - 2 * (alpha_l ./ m) .* (abs( exp(1i * x_loc * kk) * (u_ocn_xf)  - vxf)) ;
-    B22 = - 2 * (alpha_l ./ m) .* (abs( exp(1i * x_loc * kk) * (u_ocn_yf)  - vyf));
-    B33 = - 2 * (beta_l ./ I) .* abs( exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf );
-    B = diag([B11;B22;B33]);
+    JR11 = - 2 * (alpha_l ./ m) .* (abs( exp(1i * x_loc * kk) * (u_ocn_xf)  - vxf)) ;
+    JR22 = - 2 * (alpha_l ./ m) .* (abs( exp(1i * x_loc * kk) * (u_ocn_yf)  - vyf));
+    JR33 = - 2 * (beta_l ./ I) .* (abs( exp(1i * x_loc * kk) * ( gamma_mean0(109:184,1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omgf ));
+    JR_Vel = diag([JR11;JR22;JR33]);
 
     % V1
-    B14 = - B11 .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(1,:))); 
-    B15 = - B22 .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(2,:)));
-    B16 = - B33 .* exp(1i * x_loc * kk);
+    JR14 = - JR11 .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(1,:))); 
+    JR24 = - JR22 .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(2,:)));
+    % JR34 = - JR33 .* (exp(1i * x_loc * kk) .* (ones(L,1) * (1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:)))/2);
+    JR34 = zeros(36,76);
 
-    % V2
-    % B14 = 2 * (abs( exp(1i * x_loc * kk) * (u_ocn_xf)  - vxf).*ones(1,Dim_U)) .* (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(1,:)));
-    % B15 = 2 * (abs( exp(1i * x_loc * kk) * (u_ocn_yf)  - vyf).*ones(1,Dim_U)) .* (alpha_l./ m * ones(1,Dim_U)) .* (exp(1i * x_loc * kk) .* (ones(L,1) * rk(2,:)));
-    % B16 = zeros(36,76);
-    BR = [B14;B15;B16];
-    Jac = real([B,BR;
+    JR_Ocn = [JR14;JR24;JR34];
+    Jac = real([JR_Vel,JR_Ocn;
            zeros(Dim_U, L), zeros(Dim_U, L), zeros(Dim_U, L), L_u]);
     
     
