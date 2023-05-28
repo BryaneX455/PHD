@@ -1,4 +1,4 @@
-yi% Floe model main file
+% Floe model main file
 rng(11);
 T = 10; % total time length
 dt = 0.001; % time step
