@@ -45,8 +45,7 @@ for l = 2:L
     end
     flag = 1;
 end
-% Location(:,1) = [4,pi/2+0.5];
-% Location(:,2) = [5,pi/2*3-0.5];
+
 
 % floe thickness
 thickness = 0.5*rand(1,L)*0 + 1; thickness = round(thickness * 100) / 100; %%% changed floe thickness to match the dimensionalization

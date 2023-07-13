@@ -94,7 +94,7 @@ d_g = 0.5; % damping of the gravity modes
 sigma_B = 0.4; % noise of the GB modes
 sigma_g = 0.4; % noise of the gravity modes
 f_amp = 1.6; % large-scale forcing amplitude
-f_phase = 14; % large-scale forcing period
+f_phase = 1.5; % large-scale forcing period
 f_x_b = 0.5;  % large-scale forcing background in x direction
 f_y_b = 0;% large-scale forcing background in y direction
 % b1: noise coefficient; a1: damping and phase 

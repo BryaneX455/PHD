@@ -7,9 +7,10 @@ x = zeros(L,N);
 y = zeros(L,N);
 x(:,1) = Location(1,:)'; % Lagrangian tracers (floe center location x) evolving with time
 y(:,1) = Location(2,:)'; % Lagrangian tracers (floe center location y) evolving with time
+Omg= zeros(L,N); % Lagrangian tracers (floe center location y) evolving with time
 vo_x = zeros(L,N); % velocity component x corresponding to the ocean forces
 vo_y = zeros(L,N); % velocity component y corresponding to the ocean forces
-sigma_x = 50/2/pi*0.1/2; % random noise in the tracer equation
+sigma_x = 0.1/2*50/2/pi; % random noise in the tracer equation
 omega = zeros(L,N); % angular velocity
 
 % m is the mass 
@@ -43,22 +44,15 @@ for i = 2:N
     % Euler Maruyama
     x(:,i) = real(x(:,i-1)) + (vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in x
     y(:,i) = real(y(:,i-1)) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
-    
-    % Question: why the different velocity scales?
-%     vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * dt);
-%     vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * dt);
+    Omg(:,i) = real(Omg(:,i-1) + omega(:,i-1) * dt + sqrt(dt) * sigma_x * randn(L,1)); % floe equation in x
     
     vo_x(:,i) = real(vo_x(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * dt);
     vo_y(:,i) = real(vo_y(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * dt);
     
-%     vo_x(:,i) = real(vo_x(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) * dt);
-%     vo_y(:,i) = real(vo_y(:,i-1) + alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) * dt);
-   
     % rotation
-    t_o = real(beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1) ).* abs(exp(1i * x_loc * kk / 50.0 *(2*pi)) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(2,:) - 1i * rk(1,:) .* kk(1,:) ) )/2 - omega(:,i-1)));  
+    t_o = real(beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1) ).* abs(exp(1i * x_loc * kk / 50.0 *(2*pi)) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1)));  
     
-    save_rotation_force(:,i-1) = 1./I .* (t_o);
-    omega(:,i) = real(omega(:,i-1) + save_rotation_force(:,i-1) * dt);
+    omega(:,i) = omega(:,i-1) + 1./I .* (t_o) * dt;
     % Periodic boundary conditions
     x(:,i) = mod(real(x(:,i)),50);
     y(:,i) = mod(real(y(:,i)),50);
