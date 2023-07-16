@@ -10,7 +10,7 @@ y(:,1) = Location(2,:)'; % Lagrangian tracers (floe center location y) evolving 
 Omg= zeros(L,N); % Lagrangian tracers (floe center location y) evolving with time
 vo_x = zeros(L,N); % velocity component x corresponding to the ocean forces
 vo_y = zeros(L,N); % velocity component y corresponding to the ocean forces
-sigma_x = 0.1/2;%0.1/2 random noise in the tracer equation
+sigma_x = 0.1/2;% random noise in the tracer equation
 omega = zeros(L,N); % angular velocity
 % computing the bigger and the smaller radii of each floe pair
 radius_max = max(ones(L,1) * radius, radius' * ones(1,L));
@@ -53,7 +53,7 @@ for i = 2:N
     
     % rotation
     t_o = real(beta_l .* ( exp(1i * x_loc * kk) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1) ) .* abs(exp(1i * x_loc * kk) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1)));
-    save_rotation_force(:,i-1) = 1./I .* (t_o);
+    save_rotation_force(:,i-1) =1./I .* (t_o);
     omega(:,i) = omega(:,i-1) + save_rotation_force(:,i-1) * dt + sqrt(dt) * sigma_x * randn(L,1);
     % Periodic boundary conditions
     x(:,i) = mod(x(:,i),2*pi);

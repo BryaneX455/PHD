@@ -46,13 +46,13 @@ for i = 2:N
     y(:,i) = real(y(:,i-1)) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
     Omg(:,i) = real(Omg(:,i-1) + omega(:,i-1) * dt + sqrt(dt) * sigma_x * randn(L,1)); % floe equation in x
     
-    vo_x(:,i) = real(vo_x(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * dt);
-    vo_y(:,i) = real(vo_y(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * dt);
+    vo_x(:,i) = real(vo_x(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * dt) + sqrt(dt) * sigma_x * randn(L,1);
+    vo_y(:,i) = real(vo_y(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * dt) + sqrt(dt) * sigma_x * randn(L,1);
     
     % rotation
     t_o = real(beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1) ).* abs(exp(1i * x_loc * kk / 50.0 *(2*pi)) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1)));  
     
-    omega(:,i) = omega(:,i-1) + 1./I .* (t_o) * dt;
+    omega(:,i) = omega(:,i-1) + 1./I .* (t_o) * dt + 2 * pi / 50 * sqrt(dt) * sigma_x * randn(L,1);
     % Periodic boundary conditions
     x(:,i) = mod(real(x(:,i)),50);
     y(:,i) = mod(real(y(:,i)),50);

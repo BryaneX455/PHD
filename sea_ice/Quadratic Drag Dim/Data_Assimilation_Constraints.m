@@ -12,8 +12,10 @@ Dim_X = obs_num*L;
 % define constant matrices in data assimilation
 invBoB = 1 / sigma_x / sigma_x * eye(obs_num*L); % inverse of the square of the observational noise
 
-b1 = [zeros(3*L, 3*L),zeros(3*L, Dim_U);% the noise matrix in the unobserved processes
-    zeros(Dim_U, 3*L), Sigma_u];
+b1 = [diag(ones(L,1)*sigma_x),zeros(L,2*L+Dim_U);
+    zeros(L,L),diag(ones(L,1)*sigma_x),zeros(L,L+Dim_U);
+    zeros(L,2*L),diag(ones(L,1)*2*pi/50*sigma_x),zeros(L,Dim_U);
+    zeros(Dim_U, 3*L), Sigma_u];% the noise matrix in the unobserved processes
 
 A1 = eye(obs_num*L, 3*L + Dim_U); % matrix A1 in the observed processes
 A0 = zeros(obs_num*L,1); % vector A0 in the observed processes
@@ -64,8 +66,8 @@ for i = 2:N
     vxf = gamma_mean0(1:L,1);
     vyf = gamma_mean0(L+1:2*L,1);
     omgf = gamma_mean0(2*L+1:3*L,1);
-    Fm2 = 2*pi/50* alpha_l ./ m .* (50/2/pi*exp(1i * x_loc * kk /50 * 2 * pi) * (u_ocn_xf)  - vxf) .* abs(50 / 2 / pi * exp(1i * x_loc * kk * 2 * pi /50) * (u_ocn_xf)  - vxf);
-    Fm3 = 2*pi/50* alpha_l ./ m .* (50/2/pi*exp(1i * x_loc * kk /50 * 2 * pi) * (u_ocn_yf)  - vyf) .* abs(50 / 2 / pi * exp(1i * x_loc * kk * 2 * pi /50) * (u_ocn_yf)  - vyf);
+    Fm2 = 2*pi/50* alpha_l ./ m .* (50/2/pi*exp(1i * x_loc * kk /50 * 2 * pi) * (u_ocn_xf)  - vxf) .* abs(50 / 2 / pi * exp(1i * x_loc * kk * 2 * pi /50) * (u_ocn_xf)  - vxf) ;
+    Fm3 = 2*pi/50* alpha_l ./ m .* (50/2/pi*exp(1i * x_loc * kk /50 * 2 * pi) * (u_ocn_yf)  - vyf) .* abs(50 / 2 / pi * exp(1i * x_loc * kk * 2 * pi /50) * (u_ocn_yf)  - vyf) ;
     Fm1 = beta_l ./ I .* (exp(1i * x_loc * kk * 2 * pi /50) * ( gamma_mean0(3*L+1:end,1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omgf) .* abs(exp(1i * x_loc * kk * 2 * pi /50) * ( gamma_mean0(3*L+1:end,1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omgf);
 
     % Jacobian 

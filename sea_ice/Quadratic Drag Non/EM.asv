@@ -132,7 +132,7 @@ mu_s(:,end) = gamma_mean; % the starting point is the final value of the filteri
 R_s(:,end) = diag(gamma_cov);
 for i = N-1:-1:1
     mu_s(:,i) = mu_s(:,i+1) + (- a0 - a1*mu_s(:,i+1) + (b1 * b1') * diag(gamma_cov_trace(:,i+1))^(-1) * (gamma_mean_trace(:,i+1)) - mu_s(i+1)) * dt;
-    R_s(:,i) = R_s(:,i+1) - diag(((a1 + b1 * b1' * diag(gamma_cov_trace(:,i+1))^(-1)) * R_s(:,i+1) + R_s(:,i+1)' * (a1' + b1 * b1' * diag(gamma_cov_trace(:,i+1))^(-1)) - b1 * b1') * dt);
+    R_s(:,i) = R_s(:,i+1) - ((a1 + b1 * b1' * diag(gamma_cov_trace(:,i+1))^(-1)) * R_s(:,i+1) + R_s(:,i+1) * (a1' + b1 * b1' * diag(gamma_cov_trace(:,i+1))^(-1)) - b1 * b1') * dt;
 end
     
 %     % MRM
