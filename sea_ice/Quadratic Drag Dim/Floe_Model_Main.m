@@ -44,15 +44,15 @@ for i = 2:N
     % Euler Maruyama
     x(:,i) = real(x(:,i-1)) + (vo_x(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in x
     y(:,i) = real(y(:,i-1)) + (vo_y(:,i-1)) * dt + sqrt(dt) * sigma_x * randn(L,1); % floe equation in y
-    Omg(:,i) = real(Omg(:,i-1) + omega(:,i-1) * dt + sqrt(dt) * sigma_x * randn(L,1)); % floe equation in x
+    Omg(:,i) = real(Omg(:,i-1) + omega(:,i-1) * dt + sqrt(dt) * 2 * pi /50 * sigma_x * randn(L,1)); % floe equation in x
     
-    vo_x(:,i) = real(vo_x(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * dt) + sqrt(dt) * sigma_x * randn(L,1);
-    vo_y(:,i) = real(vo_y(:,i-1) + 2*pi/50 * alpha_l ./ m .* (50/(2*pi)*exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) .* abs(50/(2*pi) * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * dt) + sqrt(dt) * sigma_x * randn(L,1);
+    vo_x(:,i) = real(vo_x(:,i-1) + 2*pi/50 * alpha_l ./ m .* (exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:))) - vo_x(:,i-1)) .* abs(exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(1,:)))  - vo_x(:,i-1)) * dt) + sqrt(dt) * sigma_x * randn(L,1);
+    vo_y(:,i) = real(vo_y(:,i-1) + 2*pi/50 * alpha_l ./ m .* (exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:))) - vo_y(:,i-1)) .* abs(exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose(rk(2,:)))  - vo_y(:,i-1)) * dt) + sqrt(dt) * sigma_x * randn(L,1);
     
     % rotation
-    t_o = real(beta_l .* ( exp(1i * x_loc * kk * 2 * pi / 50 ) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1) ).* abs(exp(1i * x_loc * kk / 50.0 *(2*pi)) * ( u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1)));  
+    t_o = real(beta_l .* ( 2 * pi / 50 * exp(1i * x_loc * kk * 2 * pi / 50 ) * (u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1) ).* abs(2 * pi / 50 * exp(1i * x_loc * kk / 50.0 *(2*pi)) * (u_hat(:,i-1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omega(:,i-1)));  
     
-    omega(:,i) = omega(:,i-1) + 1./I .* (t_o) * dt + 2 * pi / 50 * sqrt(dt) * sigma_x * randn(L,1);
+    omega(:,i) = omega(:,i-1) + 1./I .* (t_o) * dt + 2* pi /50 * sqrt(dt) * sigma_x * randn(L,1);
     % Periodic boundary conditions
     x(:,i) = mod(real(x(:,i)),50);
     y(:,i) = mod(real(y(:,i)),50);
@@ -78,8 +78,8 @@ for i = 1:100
     ylim([0, 50.0])
     box on    
     title(['t = ', num2str(dt*100*(i-1))])
-    u = exp(1i * x_vec * kk *2*pi/50.0) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:))) * 50 / (2*pi);
-    v = exp(1i * x_vec * kk *2*pi/50.0) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:))) * 50 / (2*pi);
+    u = exp(1i * x_vec * kk *2*pi/50.0) * (u_hat(:,1+100*(i-1)) .* transpose(rk(1,:)));
+    v = exp(1i * x_vec * kk *2*pi/50.0) * (u_hat(:,1+100*(i-1)) .* transpose(rk(2,:)));
     u = reshape(u, Dim_Grid, Dim_Grid);
     v = reshape(v, Dim_Grid, Dim_Grid);
     quiver(xx, yy, u, v, 'linewidth',1)

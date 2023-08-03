@@ -10,7 +10,8 @@ Dim_Y = 3*L + Dim_U;
 Dim_X = obs_num*L;
 
 % define constant matrices in data assimilation
-invBoB = 1 / sigma_x / sigma_x * eye(obs_num*L); % inverse of the square of the observational noise
+invBoB = 1 / sigma_x / sigma_x * eye((obs_num-1)*L); % inverse of the square of the observational noise
+invBoB = [invBoB, zeros((obs_num-1)*L,L); zeros(L,(obs_num-1)*L), 1 / (sigma_x * 2 * pi / 50) / (sigma_x * 2 * pi / 50) * eye(L)];
 
 b1 = [diag(ones(L,1)*sigma_x),zeros(L,2*L+Dim_U);
     zeros(L,L),diag(ones(L,1)*sigma_x),zeros(L,L+Dim_U);
@@ -66,20 +67,20 @@ for i = 2:N
     vxf = gamma_mean0(1:L,1);
     vyf = gamma_mean0(L+1:2*L,1);
     omgf = gamma_mean0(2*L+1:3*L,1);
-    Fm2 = 2*pi/50* alpha_l ./ m .* (50/2/pi*exp(1i * x_loc * kk /50 * 2 * pi) * (u_ocn_xf)  - vxf) .* abs(50 / 2 / pi * exp(1i * x_loc * kk * 2 * pi /50) * (u_ocn_xf)  - vxf) ;
-    Fm3 = 2*pi/50* alpha_l ./ m .* (50/2/pi*exp(1i * x_loc * kk /50 * 2 * pi) * (u_ocn_yf)  - vyf) .* abs(50 / 2 / pi * exp(1i * x_loc * kk * 2 * pi /50) * (u_ocn_yf)  - vyf) ;
+    Fm2 = 2 * pi / 50 * alpha_l ./ m .* (exp(1i * x_loc * kk / 50 * 2 * pi) * (u_ocn_xf)  - vxf) .* abs(exp(1i * x_loc * kk * 2 * pi / 50) * (u_ocn_xf)  - vxf) ;
+    Fm3 = 2 * pi / 50 * alpha_l ./ m .* (exp(1i * x_loc * kk / 50 * 2 * pi) * (u_ocn_yf)  - vyf) .* abs(exp(1i * x_loc * kk * 2 * pi / 50) * (u_ocn_yf)  - vyf) ;
     Fm1 = beta_l ./ I .* (exp(1i * x_loc * kk * 2 * pi /50) * ( gamma_mean0(3*L+1:end,1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omgf) .* abs(exp(1i * x_loc * kk * 2 * pi /50) * ( gamma_mean0(3*L+1:end,1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omgf);
 
     % Jacobian 
-    JR11 = - 2 * (2 * pi / 50 * alpha_l ./ m) .* abs(50 / 2 / pi * exp(1i * x_loc * kk * 2 * pi / 50) * (u_ocn_xf)  - vxf);
-    JR22 = - 2 * (2 * pi / 50 * alpha_l ./ m) .* abs(50 / 2 / pi * exp(1i * x_loc * kk * 2 * pi / 50) * (u_ocn_yf)  - vyf);
-    JR33 = - 2 * (beta_l ./ I) .* abs( exp(1i * x_loc * kk * 2 * pi / 50) * ( gamma_mean0(3*L+1:end,1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omgf );
+    JR11 = - 2 * (2 * pi / 50 * alpha_l ./ m) .* abs(exp(1i * x_loc * kk * 2 * pi / 50) * (u_ocn_xf)  - vxf);
+    JR22 = - 2 * (2 * pi / 50 * alpha_l ./ m) .* abs(exp(1i * x_loc * kk * 2 * pi / 50) * (u_ocn_yf)  - vyf);
+    JR33 = - 2 * (beta_l ./ I) .* abs(exp(1i * x_loc * kk * 2 * pi / 50) * ( gamma_mean0(3*L+1:end,1) .* transpose( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:) ) )/2 - omgf );
     JR_Vel = diag([JR11;JR22;JR33]);
 
     % V1
     JR14 = - JR11 .* (exp(1i * x_loc * kk * 2 * pi / 50) .* (ones(L,1) * rk(1,:))); 
     JR24 = - JR22 .* (exp(1i * x_loc * kk * 2 * pi / 50) .* (ones(L,1) * rk(2,:)));
-    JR34 = - JR33 .* (exp(1i * x_loc * kk * 2 * pi / 50) .* (ones(L,1) * ( 1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:)))/2);
+    JR34 = - JR33 .* (exp(1i * x_loc * kk * 2 * pi / 50) .* (ones(L,1) * (1i * rk(2,:) .* kk(1,:) - 1i * rk(1,:) .* kk(2,:)))/2);
    
 
     JR_Ocn = [JR14;JR24;JR34];
@@ -89,10 +90,6 @@ for i = 2:N
     
     F_u = zeros(Dim_U, 1);
     t = i*dt;
-    F_u(1:2:end-3) = 0; 
-    F_u(2:2:end-2) = 0; 
-    F_u(end-1) = 0;
-    F_u(end) = 0; 
     
     a0 = [Fm2 - Jac(1:L, :) * gamma_mean0; 
           Fm3 - Jac(L+1:2*L, :) * gamma_mean0; 

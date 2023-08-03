@@ -254,6 +254,7 @@ for i = 1:n1+n2
     xlabel('k');
 end
 
+
 % the estimated parameters, which are the final value of the iteration
 % g_est = Param_save(1,end);
 % b_est = Param_save(2,end);
